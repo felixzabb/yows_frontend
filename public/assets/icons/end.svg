@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" id="Finish">
+  <g data-name="Layer 7" fill="#000000" class="color000000 svgShape">
+    <rect width="4" height="4" x="2" y="26" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="10" y="26" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="2" y="34" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="10" y="34" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="6" y="30" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="6" y="38" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="2" y="42" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="10" y="42" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="2" y="50" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="10" y="50" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="6" y="46" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="6" y="54" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="2" y="58" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="10" y="58" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="50" y="26" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="58" y="26" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="50" y="34" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="58" y="34" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="54" y="30" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="54" y="38" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="50" y="42" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="58" y="42" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="50" y="50" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="58" y="50" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="54" y="46" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="54" y="54" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="50" y="58" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <rect width="4" height="4" x="58" y="58" fill="#d55ed0" class="colorf2b0ae svgShape"/>
+    <path fill="#b140ac" d="M39 9a3 3 0 003 3h1a1 1 0 010 2H39v2h4a3 3 0 000-6H42a1 1 0 010-2h4V6H42A3 3 0 0039 9zM10 7v9h2V12h4V10H12V8h4V6H11A1 1 0 0010 7z" class="colorb1404a svgShape"/>
+    <polygon fill="#b140ac" points="17 8 19 8 19 14 17 14 17 16 23 16 23 14 21 14 21 8 23 8 23 6 17 6 17 8" class="colorb1404a svgShape"/>
+    <path fill="#b140ac" d="M29,11.513,25.848,6.47A1,1,0,0,0,24,7v9h2V10.487l.652,1.043c2.393,3.829,2.811,4.5,3.291,4.5a1.209,1.209,0,0,0,.332-.066A1,1,0,0,0,31,15V6H29Z" class="colorb1404a svgShape"/>
+    <polygon fill="#b140ac" points="32 8 34 8 34 14 32 14 32 16 38 16 38 14 36 14 36 8 38 8 38 6 32 6 32 8" class="colorb1404a svgShape"/>
+    <polygon fill="#b140ac" points="52 12 52 16 54 16 54 6 52 6 52 10 49 10 49 6 47 6 47 16 49 16 49 12 52 12" class="colorb1404a svgShape"/>
+    <path fill="#b140ac" d="M54.832,1.445A1,1,0,0,0,54,1H10a1,1,0,0,0-.832.445l-8,12A1.006,1.006,0,0,0,1,14V62a1,1,0,0,0,1,1H14a1,1,0,0,0,1-1V25.414L19.414,21H44.586L49,25.414V62a1,1,0,0,0,1,1H62a1,1,0,0,0,1-1V14a1.006,1.006,0,0,0-.168-.555ZM9,55v2H7V55ZM7,53V51H9v2Zm0-4V47H9v2Zm0-4V43H9v2Zm0-4V39H9v2Zm0-4V35H9v2Zm0-4V31H9v2ZM5,33H3V31H5Zm0,2v2H3V35Zm0,4v2H3V39Zm0,4v2H3V43Zm0,4v2H3V47Zm0,4v2H3V51Zm0,4v2H3V55Zm4,4v2H7V59Zm2-4h2v2H11Zm0-2V51h2v2Zm0-4V47h2v2Zm0-4V43h2v2Zm0-4V39h2v2Zm0-4V35h2v2Zm0-4V31h2v2Zm0-4V27h2v2ZM9,29H7V27H9ZM5,29H3V27H5ZM3,59H5v2H3Zm8,2V59h2v2ZM45.707,19.293A1,1,0,0,0,45,19H19a1,1,0,0,0-.707.293l-5,5A1,1,0,0,0,13,25H3V14.3L10.535,3h42.93L61,14.3V25H51a1,1,0,0,0-.293-.707ZM51,27h2v2H51Zm6,28v2H55V55Zm-2-2V51h2v2Zm0-4V47h2v2Zm0-4V43h2v2Zm0-4V39h2v2Zm0-4V35h2v2Zm0-4V31h2v2Zm0-4V27h2v2Zm-4,2h2v2H51Zm0,4h2v2H51Zm0,4h2v2H51Zm0,4h2v2H51Zm0,4h2v2H51Zm0,4h2v2H51Zm0,4h2v2H51Zm6,4v2H55V59Zm2-4h2v2H59Zm0-2V51h2v2Zm0-4V47h2v2Zm0-4V43h2v2Zm0-4V39h2v2Zm0-4V35h2v2Zm0-4V31h2v2Zm0-4V27h2v2ZM51,59h2v2H51Zm8,2V59h2v2Z" class="colorb1404a svgShape"/>
+  </g>
+</svg>
