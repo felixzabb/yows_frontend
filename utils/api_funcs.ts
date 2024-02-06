@@ -106,10 +106,19 @@ export const saveScrape = async ({apiKey, userId, data} : {apiKey : string, user
 
 export const runScrape = async ({apiKey, userId, data} : {apiKey : string, userId : string, data : any}) : Promise<RunScrapeReturnData> => {
 
+    
     const runScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/scrape/run_scrape?" + new URLSearchParams({
         api_key: apiKey,
         uid: userId,
-    });
+    }); 
+    
+
+    /**
+     * //  aws config
+    const runScrapeUrl = "https://m2nzob5pbopzmzqyfvb3nrsqbu0hzwro.lambda-url.eu-central-1.on.aws/" + new URLSearchParams({
+        uid: userId,
+    }); 
+     */
 
     const fetchData : Promise<RunScrapeReturnData> = await fetch(runScrapeUrl, {
       method: 'POST',
