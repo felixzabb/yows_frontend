@@ -10,7 +10,9 @@ const Home = () => {
       </h1>
 
       <h2 className="sub_text" >
-        Build Your Own Web-Scraper
+        Build Your Own Web-Scraper <br/>
+
+        <h1 className="font-[800] text-[40px]">THIS WEBSITE IS CURRENTLY IN DEVELOPEMENT</h1>
       </h2>
 
     </section>

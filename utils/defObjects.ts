@@ -6,7 +6,7 @@ export const defScrapeInfoObject : { workflow : WorkflowObject, global_params : 
     0 : ["scrape-action", {css_selector: ""}] 
   },
   global_params:{
-    website_url : "", wait_time : 10, browser_type : "Edge", amount_actions_local : 1, use_undetected: false
+    website_url : "", wait_time : 5, amount_actions_local : 1, use_undetected: false
   },
   loop: {
     loop_start_end: [1, 1], iterations: 2, created: false,

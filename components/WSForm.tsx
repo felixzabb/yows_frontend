@@ -131,11 +131,12 @@ const WSForm = ({ User }) => {
     }   
     else if(!all){
 
-      if(scraperInfos?.all[scrapeIdx] === undefined || window.document.getElementById(`global-param-browser-type-input-${scrapeIdx}`) === null){return;}
+      if(scraperInfos?.all[scrapeIdx] === undefined ||window.document.getElementById(`global-param-wait-time-input-${scrapeIdx}`) === null){return;}
 
       var returnValue = true;
 
       let scrapeUrl = String(scraperInfos?.all?.[scrapeIdx].global_params.website_url);
+      /** 
       let browserType = String(scraperInfos?.all?.[scrapeIdx].global_params.browser_type);
       const possibleBrowserTypes = ["edge", "firefox", "chrome", ""];
 
@@ -144,6 +145,7 @@ const WSForm = ({ User }) => {
         returnValue = false;
       }
       else{window.document.getElementById(`global-param-browser-type-input-${scrapeIdx}`).classList.add("border-green-800");}
+      */
 
       if(scraperInfos?.all[scrapeIdx].loop.created){
 
@@ -1152,7 +1154,8 @@ const WSForm = ({ User }) => {
 
                         </div>
 
-                        <div className=" w-[20%] c_row_elm text-start justify-center h-10 gap-x-1">
+                        {/**
+                         * <div className=" w-[20%] c_row_elm text-start justify-center h-10 gap-x-1">
 
                           <span id={`browser-type-tooltip-${index}`} 
                             className={"tooltip hidden top-[-18px] right-3 "} >
@@ -1173,6 +1176,7 @@ const WSForm = ({ User }) => {
                           />
 
                         </div>
+                         */}
 
                       </div>
                       
@@ -1200,7 +1204,8 @@ const WSForm = ({ User }) => {
                         />
 
                         {/** BROWSER INPUT */}
-                        <input type="text" 
+                        {/**
+                         * <input type="text" 
                           className="rounded-xl border-2 border-black text-[16px] pl-2 justify-center h-10 bg-zinc-200 w-[20%] text-start " 
                           required 
                           placeholder="Edge"
@@ -1208,6 +1213,8 @@ const WSForm = ({ User }) => {
                           id={`global-param-browser-type-input-${index}`} 
                           onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "browser_type", value: e.target.value}); }} 
                         />
+                         */}
+                        
                           
                       </div>
                       

@@ -13,7 +13,6 @@ type WorkflowObject = {
 type GlobalParamsObject = {
   website_url : string
   wait_time : number
-  browser_type : string
   amount_actions_local : number
   use_undetected : boolean
 };
