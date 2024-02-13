@@ -57,9 +57,9 @@ YOWS provides some API paths you can follow, with the ability to request custom 
 ## Error handling
 If you ever encounter an error when using YOWS, be it on the web or through an http response, you can refer to the [YOWS error page](https://yows.me/errors). The most common issues are listed here: 
 
-- [AUTH-REQ-1](https://yows.me/errors/?error_code=auth-req-1) - Most commonly returned, when an API request had invalid credentials provided. :exclamation: Check your api_key parameter and your API-permissions, which come with your API key. :exclamation:
+- [AUTH-REQ-1](https://yows.me/errors/?error_code=auth-req-1) - Most commonly returned, when an API request had invalid credentials provided. <br/> :exclamation: Check your api_key parameter and your API-permissions, which come with your API key. :exclamation:
 
-- [DB-CONN-1](https://yows.me/errors/?error_code=db-conn-1) - Returned, when the backend server fails to connect to the internal database. :exclamation: This error is server-side, if you see it, then I'm already on it. :exclamation: 
+- [DB-CONN-1](https://yows.me/errors/?error_code=db-conn-1) - Returned, when the backend server fails to connect to the internal database. <br/> :exclamation: This error is server-side, if you see it, then I'm already on it. :exclamation: 
 
 ## Examples
 Here you'll find a list of examples concerning things covered in this markdown.
@@ -90,7 +90,7 @@ You can use this URL in any requests library in any programming language. Don't 
 <br/>
 
 Parameters:
-- api_key: Your API key. Don't have one? [Get an API key](#getting-an-api-key!).
+- api_key: Your API key. Don't have one? [Get an API key](#getting-an-api-key).
 - scraper_id: Your scraper id. You can get it in your [saved-scrapes](https://yows.me/saved-scrapes) page. Just click on "copy ID".
 - retry(optional): 0 or 1. :exclamation: Maximum retry-count is currently 2. :exclamation:
 
@@ -101,7 +101,7 @@ To run a scraper through an API call, use this blueprint url:
 You can use this URL in any requests library in any programming language. Don't know any? Prefix the URL with "curl " in your terminal/cmd and add " > results.json" after it. Your results will be accessible in a newly created results.json file in your current directory.
 <br/>
 Parameters:
-- api_key: Your API key. Don't have one? [Get an API key](#getting-an-api-key!).
+- api_key: Your API key. Don't have one? [Get an API key](#getting-an-api-key).
 - scraper_id: Your scraper id. You can get it in your [saved-scrapes](https://yows.me/saved-scrapes) page. Just click on "copy ID".
 - retry(optional): 0 or 1. :exclamation: Maximum retry-count is currently 2. :exclamation:
 

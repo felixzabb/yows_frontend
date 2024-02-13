@@ -21,6 +21,7 @@
   @apply text-center  text-black;
 }
 
+
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
 .c_col_elm{
@@ -115,7 +116,7 @@
 
 .purple_btn{
 
-  @apply bg-purple-400 w-auto p-1 px-2 min-w-[60px]  rounded-[6px] h-[48px] text-[16px] font-[600] ;
+  @apply shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-purple-500 bg-purple-400 w-auto p-1 px-2 min-w-[60px]  rounded-[6px] h-[48px] text-[16px] font-[600] ;
   
 }
 

@@ -1,0 +1,41 @@
+{
+  "AUTH" : {
+    "REQ" : {
+      "1" : {
+        "tags" : ["client-side", "authentication"],
+        "desc" : "Credentials provided in the request are invalid.",
+        "possibleFix" : "Check all keys/ids in your request for validity. Check your request URL."
+      }
+    }
+  },
+  "DB" : {
+    "CONN" : {
+      "1" : {
+        "tags" : ["server-side", "database"],
+        "desc" : "Failed to connect to db (server-side).",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      }
+    },
+    "POST" : {
+      "1" : {
+        "tags" : ["server-side", "database"],
+        "desc" : "Unknown error when inserting many documents into DB.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      }
+    },
+    "PUT" : {
+      "1" : {
+        "tags" : ["server-side", "database"],
+        "desc" : "Unknown error when updating many documents in DB.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      }
+    },
+    "DEL" : {
+      "1" : {
+        "tags" : ["server-side", "database"],
+        "desc" : "Unknown error when deleting from DB.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      }
+    }
+  }
+}

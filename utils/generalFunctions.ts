@@ -64,3 +64,9 @@ export const isElementVisible = ({elementId} : {elementId : string}) : boolean |
 
   return;
 }
+
+export const returnInputElementValue = ({elementId} : {elementId : string}) : string => {
+
+  const inputElement = window.document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
+  return inputElement.value;
+}

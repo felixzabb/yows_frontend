@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { returnInputElementValue } from "@utils/generalFunctions";
 
 const DialogOverlay = ({ results, load, type, generateExport } : {results : object, 
                                                                   load : ({id, resultsNeeded, confimNeeded} : {id : string | (() => string), resultsNeeded : boolean, confimNeeded : boolean}) => Promise<void>, 
@@ -21,11 +22,7 @@ const DialogOverlay = ({ results, load, type, generateExport } : {results : obje
     return;
   };
 
-  const returnInputElementValue = ({elementId} : {elementId : string}) : string => {
-
-    const inputElement = window.document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
-    return inputElement.value;
-  }
+  
 
   if (type == "loadScrape") return (
 

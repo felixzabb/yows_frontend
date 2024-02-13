@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import { useSession } from "next-auth/react";
+import Dropdown from "./small_components/Dropdown";
 
 
 const Nav = () => {
@@ -43,13 +44,12 @@ const Nav = () => {
 							<Link href="/saved-scrapes" >
 
 								<button type="button" className="purple_btn" >
-
 									Saved 
-
 								</button>
 							
 							</Link>
-								
+
+							<Dropdown options={{errors : {name : "Errors", href: "/errors"}, docs : {name : "Docs", href:"/docs"}}} />
 
 							<Link href='/profile'>
 
@@ -59,8 +59,10 @@ const Nav = () => {
 				
 							</Link>
 
-
+							
 						</div>
+
+						
 					)
 
 					:
