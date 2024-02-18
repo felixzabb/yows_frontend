@@ -89,7 +89,7 @@ export const putToDb = async ({apiKey, dbName, collectionName, data} : {apiKey :
 
 export const saveScrape = async ({apiKey, userId, data} : {apiKey : string, userId : string, data : object[]}) : Promise<SaveScrapeReturnData> => {
 
-    const saveScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/save_scrape?" + new URLSearchParams({
+    const saveScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/save_scrape?" + new URLSearchParams({
         api_key: apiKey,
         uid: userId,
     });
@@ -135,14 +135,14 @@ export const runScrape = async ({apiKey, userId, data} : {apiKey : string, userI
 
 export const deleteScrape = async ({apiKey, scrapeId, userId} : {apiKey : string, scrapeId : string, userId : string}) : Promise<DeleteFromDbReturnData> => {
 
-    const deleteScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/delete_scrape?" + new URLSearchParams({
+    const deleteScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/delete_scrape?" + new URLSearchParams({
       api_key: apiKey,
       scrape_id: scrapeId,
       uid: userId,
     });
 
     const fetchData : Promise<DeleteFromDbReturnData> = await fetch(deleteScrapeUrl, {
-      method: "PUT",
+      method: "DELETE",
     })
     .then((response) => {
       if(!response.ok){console.log("Fetch to delete scrape failed."); return response.status;};
@@ -155,7 +155,7 @@ export const deleteScrape = async ({apiKey, scrapeId, userId} : {apiKey : string
 
 export const pullSavedScrapes = async ({apiKey, userId} : {apiKey : string, userId : string}) : Promise<PullFromDbReturnData<ScrapeInfoSave>> => {
 
-    const getSavedScrapesUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/load_saved_scrapes?" + new URLSearchParams(
+    const getSavedScrapesUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/load_saved_scrapes?" + new URLSearchParams(
       {
         api_key: apiKey,
         uid: userId

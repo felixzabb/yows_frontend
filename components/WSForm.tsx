@@ -27,7 +27,7 @@ const WSForm = ({ User }) => {
   const [ expectedLoadingTime, setExpectedLoadingTime ] = useState(10);
   const [ loadingOverlay, setLoadingOverlay ] = useState(true);
   const [ currentOverlay, setCurrentOverlay ] = useState("dialog");
-  const [ currentPopUpText, setCurrentPopUpText ] = useState("Copied ID to clipboard succesfully!");
+  const [ currentPopUpText, setCurrentPopUpText ] = useState("Copied ID to clipboard successfully!");
   
   const [ update, setUpdate ] = useState(2);
 
@@ -69,11 +69,11 @@ const WSForm = ({ User }) => {
    * PARAMS:
    * - id (String): the passed in id, by which the API will search the DB
    */
-  const loadScrape = async ({id, resultsNeeded, confimNeeded} : {id : string, resultsNeeded : boolean, confimNeeded : boolean}) : Promise<void>  => {
+  const loadScrape = async ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) : Promise<void>  => {
 
     let confirmation = true;
 
-    if(confimNeeded){ confirmation = confirm("Loading the link will remove your current work"); }
+    if(confirmNeeded){ confirmation = confirm("Loading the link will remove your current work"); }
     if(!confirmation){ return; }
 
     const pullData = {filter : {"_id" : id}, projection: {}}
@@ -274,7 +274,7 @@ const WSForm = ({ User }) => {
    */
   const showHideElement = ({elementId} : {elementId : string}) : void => {
 
-    let elementClassList = window.document.getElementById(elementId).classList;
+    let elementClassList = window.document.getElementById(elementId)?.classList;
                         
     if (elementClassList.contains("hidden")){
 
@@ -1200,7 +1200,7 @@ const WSForm = ({ User }) => {
                           required 
                           value={scraperInfos?.all?.[index].global_params.wait_time}
                           id={`global-param-wait-time-input-${index}`} 
-                          onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "wait_time", value: e.target.value}); }} 
+                          onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "wait_time", value: Number(e.target.value)}); }} 
                         />
 
                         {/** BROWSER INPUT */}
