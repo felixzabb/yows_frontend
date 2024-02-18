@@ -17,7 +17,7 @@ const Nav = () => {
 
 			<Link href='/'>
 
-				<Image src='/assets/icons/planet_logo.svg'
+				<Image priority src='/assets/icons/planet_logo.svg'
 					alt="Yows logo"
 					className="object-contain rounded-full"
 					width={50}

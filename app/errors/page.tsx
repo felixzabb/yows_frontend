@@ -8,7 +8,7 @@ const ErrorPage = () => {
   const {push} = useRouter();
   return (
     <>
-      <aside className="w-full max-w-[1600px] h-[200px] flex flex-row items-start justify-start gap-x-5 border-2 border-black shadow-sm rounded-xl bg-stone-300 p-4">
+      <aside className="w-[80%] max-w-[1600px] h-[200px] flex flex-row items-start justify-start gap-x-5 border-2 border-black shadow-sm rounded-xl bg-stone-300 p-4">
         <form onSubmit={(e) => {e.preventDefault()}} className="flex- flex-col gap-y-2 items-start justify-start text-start" >
           <label className="text-[20px] font-[600] ml-[1px]" >Search:</label> 
           <div className="flex flex-row w-full h-auto items-center gap-x-2 " >

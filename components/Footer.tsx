@@ -66,6 +66,7 @@ const Footer = () => {
               alt="Twitter(X) logo link"
               width={44}
               height={44}
+              className="w-auto h-auto"
             />
           </Link>
           <Link href="#" className="text-gray-400 hover:text-gray-500">

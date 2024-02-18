@@ -70,7 +70,7 @@ const ResultOverlay = ( { results, saveAbility, currentScrapeId, getAllSavedScra
             
             return (
 
-              <section id={`result-${resultIndex}`} className="c_col_elm w-full mt-3 p-3 border-[2px] border-black rounded-md" key={`result-${resultIndex}`} >
+              <section key={`result-${resultIndex}`} id={`result-${resultIndex}`} className="c_col_elm w-full mt-3 p-3 border-[2px] border-black rounded-md" >
 
                 <aside id={`options-bar`} className="c_row_elm justify-between w-full gap-x-5 px-2 rounded-md border-1 border-[black] min-h-[50px] " >
 
@@ -108,8 +108,8 @@ const ResultOverlay = ( { results, saveAbility, currentScrapeId, getAllSavedScra
                               [...Object.keys( results[resultIndex].scrape_runs[scrapeIndex] )].map((dataPoint) => {
 
                                 return(
-                                  <>
-                                    <li id={`li-${dataPoint}`} className="c_row_elm items-center w-full my-3" key={`li-${dataPoint}`} >
+                                  <Fragment key={`fr-${dataPoint}`}>
+                                    <li id={`li-${dataPoint}`} className="c_row_elm items-center w-full my-3" >
                                       <p className="sub_text mr-2 text-start  pr-2" >
                                         {String(Number(dataPoint) + 1)}:
                                       </p>
@@ -119,7 +119,7 @@ const ResultOverlay = ( { results, saveAbility, currentScrapeId, getAllSavedScra
                                       </p>
                                     </li>
                                     <hr className="w-[100%] border-black border-1 " />
-                                  </>
+                                  </Fragment>
                                 )
 
                               })

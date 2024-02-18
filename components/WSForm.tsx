@@ -4,15 +4,32 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import ResultOverlay from '@components/ResultOverlay'
-import { postToDb, pullFromDb, putToDb, runScrape, saveScrape } from "@utils/api_funcs";
+import { pullFromDb, runScrape, saveScrape } from "@utils/api_funcs";
 import DialogOverlay from "@components/DialogOverlay";
 import RowTypeComponent from "./RowTypeComponent";
 import WorkflowElement from '@components/small_components/WorkflowElement';
 import { ClockLoader } from "react-spinners";
-import { defScrapeInfoObject, emptyResults } from "@utils/defObjects";
 import { isElementVisible } from "@utils/generalFunctions";
 
 const WSForm = ({ User }) => {
+
+  const emptyResults : ScraperInfoResults = {
+    0 : {
+      scrape_runs : {0 : []}
+    }
+  }
+
+  const defScrapeInfoObject : { workflow : WorkflowObject, global_params : GlobalParamsObject, loop : LoopObject, } = {
+    workflow : { 
+      0 : ["scrape-action", {css_selector: ""}] 
+    },
+    global_params:{
+      website_url : "", wait_time : 5, amount_actions_local : 1, use_undetected: false
+    },
+    loop: {
+      loop_start_end: [1, 1], iterations: 2, created: false,
+    },
+  };
 
   const defScraperInfos : ScraperInfos = {
     all: { 0 : defScrapeInfoObject }, 
@@ -28,6 +45,8 @@ const WSForm = ({ User }) => {
   const [ loadingOverlay, setLoadingOverlay ] = useState(true);
   const [ currentOverlay, setCurrentOverlay ] = useState("dialog");
   const [ currentPopUpText, setCurrentPopUpText ] = useState("Copied ID to clipboard successfully!");
+
+  const [ readiness, setReadiness ] = useState({all: false, 1: false});
   
   const [ update, setUpdate ] = useState(2);
 
@@ -92,6 +111,8 @@ const WSForm = ({ User }) => {
     }
 
     // need to work out better pop-up technique
+
+    assertReadiness()
     
     setCurrentPopUpText("Set Object succesfully!");
 
@@ -105,13 +126,50 @@ const WSForm = ({ User }) => {
     return;
   };
 
-  // work on this
+  const validateCssSelector = ({cssSelector} : {cssSelector : string}) => {
+    const possibleChars = [".", "#", "~", ">"];
+    const allValidHtmlTags = ["a", "abbr","address","area",	"article","aside","b","base",	"bdi","bdo","blockquote","body","br","button","canvas","caption",	"cite","code","col","colgroup","data","datalist","dd","del","details","dfn","dialog","div","dl","dt","em","embed","fieldset","figcaption","figure","footer","form","h1","head","header","hgroup","hr","i","input","ins","kbd","label","legend","li","link","main","map","mark","menu","meta","meter","nav","object","ol","optgroup","option","output","p","pre","progress","q","rp","rt","ruby","s","samp","search","section","select","slot","small","source","span","strong","style","sub","summary","sup","table","tbody","td","template","textarea","tfoot","th","time","title","tr","track","u","ul","var","video","wbr",]
+    
+    if(allValidHtmlTags.includes(cssSelector)){return true}
+    else if(cssSelector.length < 2){return false}
+
+    let firstDesignator = -1;
+    for(let i = 0; i < cssSelector.length; i++){
+      if(possibleChars.includes(cssSelector.at(i))){
+        firstDesignator = i
+        break;
+      }
+    }
+    if(firstDesignator !== -1){
+      if(firstDesignator === 0){return true}
+      if(allValidHtmlTags.includes(cssSelector.slice(0, firstDesignator)) && cssSelector.at(firstDesignator + 1) !== undefined){
+        return true
+      }
+      else{return false;}
+    } 
+  };
+
+  const assertReadiness = () => {
+
+    let tempObj = {all: false, 1: false}
+
+    for(let i = 0; i < amountScrapes; i++){
+      tempObj[i] = check_ready({scrapeIdx: i, all: false});
+    }
+    if(!Object.values(tempObj).includes(false)){
+      tempObj.all = true;
+    }
+    setReadiness(tempObj);
+  };
+  
   /** Checks if the current scrapeIdx data is valid to send to the API.
    * PARAMS:
    * - scrapeIdx (String): the current index in the scraperInfo.all Basically which 'scrape' it is
    * - all (Boolean): decides if all scrapes should be checked or only a specific one
    */
   const check_ready = ({scrapeIdx, all} : {scrapeIdx : number, all : boolean}) => {
+
+    console.log("accesed")
 
     if(scraperInfos?.all === undefined || scraperInfos?.all === null){return;}
     
@@ -198,63 +256,49 @@ const WSForm = ({ User }) => {
 
           if(window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`) === null){return;}
 
-          const cssSelector = action_data.css_selector;
-          const possibleChars = [".", "#", "~", ">", "-"];
+          const cssSelector : string = action_data.css_selector;
 
-          if(cssSelector.length < 2){window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); returnValue = false;}
-          for(const char of possibleChars){
-            
-            let contains = cssSelector.includes(char);
+          const actionValid = validateCssSelector({cssSelector: cssSelector})
 
-            if(contains){window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800"); break;}
-            else if(char === "-" && !contains){
-              window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800");
-              returnValue = false;
-            }
+          if(actionValid){
+            window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
           }
-          
-          
+          else{
+            window.document.getElementById(`class-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); 
+            returnValue = false;
+          }
         }
         else if(action_type === 'btn-press'){
 
           if(window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`) === null){return;}
 
           const cssSelector = action_data.selector;
-          const possibleChars = [".", "#", "~", ">", "-"];
 
-          if(cssSelector.length < 2){window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); returnValue = false;}
-          for(const char of possibleChars){
-            
-            let contains = cssSelector.includes(char);
+          const actionValid = validateCssSelector({cssSelector: cssSelector})
 
-            if(contains){window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800"); break;}
-            else if(char === "-" && !contains){
-              window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800");
-              returnValue = false;
-            }
+          if(actionValid){
+            window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
           }
-
-          
+          else{
+            window.document.getElementById(`btn-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); 
+            returnValue = false;
+          }
         }
         else if(action_type === 'input-fill'){
 
           if(window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`) === null){return;}
 
           const cssSelector = action_data.selector;
-          const possibleChars = [".", "#", "~", ">", "-"];
 
-          if(cssSelector.length < 2){window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); returnValue = false;}
-          for(const char of possibleChars){
-            
-            let contains = cssSelector.includes(char);
+          const actionValid = validateCssSelector({cssSelector: cssSelector})
 
-            if(contains){window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800"); break;}
-            else if(char === "-" && !contains){
-              window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800");
-              returnValue = false;
-            }
+          if(actionValid){
+            window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
           }
-          
+          else{
+            window.document.getElementById(`input-selector-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); 
+            returnValue = false;
+          }
 
           const fill_content = action_data.fill_content;
           if(fill_content.length == 0){window.document.getElementById(`input-fill-content-input-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); returnValue = false;}
@@ -305,7 +349,6 @@ const WSForm = ({ User }) => {
 
     return;
   };
-
   
   /** Resets a particular scrape to the defScrapeInfoObject through setState.
    * PARAMS:
@@ -328,6 +371,7 @@ const WSForm = ({ User }) => {
     }
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate + 1) % 2});
     
     return;
@@ -363,6 +407,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all = container;
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setAmountScrapes((prevAmountScrapes) => { return (prevAmountScrapes - 1) });
     
     return;
@@ -380,6 +425,7 @@ const WSForm = ({ User }) => {
     delete scraperInfoCopy.all[lastScrapeIdx];
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setAmountScrapes((prevAmountScrapes) => { return (prevAmountScrapes - 1) });
 
     return;
@@ -391,10 +437,10 @@ const WSForm = ({ User }) => {
 
     let scraperInfoCopy = scraperInfos;
     const appendScrapeIdx = Object.keys(scraperInfoCopy.all).length;
-
     scraperInfoCopy.all[appendScrapeIdx] = defScrapeInfoObject;
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setAmountScrapes((prevAmountScrapes) => { return (prevAmountScrapes + 1) });
 
     return;
@@ -414,6 +460,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].workflow[appendIdx] = ["btn-press", defBtnPressesObject_only_dict];
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
 
     return;
@@ -433,6 +480,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].workflow[appendIdx] = ["input-fill", defInputFillObjects_only_dict];
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
 
     return;
@@ -452,8 +500,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].workflow[appendIdx] = ["wait-time", defWaitObject_only_dict];
 
     setScrapeInfos(scraperInfoCopy);
-
-    // rerender
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
 
     return;
@@ -473,6 +520,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].workflow[appendIdx] = ["scrape-action", defScrapeObject_only_dict];
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
 
     return;
@@ -520,6 +568,7 @@ const WSForm = ({ User }) => {
     }
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => {return (prevUpdate + 1) % 2});
 
     return;
@@ -539,6 +588,7 @@ const WSForm = ({ User }) => {
     showHideElement({elementId: `loop-hr-sep-${scrapeIdx}`});
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return ( prevUpdate + 1) % 2});
 
     return;
@@ -558,11 +608,13 @@ const WSForm = ({ User }) => {
     delete scraperInfoCopy.all[scrapeIdx].workflow[removeIdx];
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
 
     return;
   };
 
+  // sometimes doesent work why tf
   /** Generates a sample workflow, depending on the last generated sample row (rotates)
    * PARAMS:
    * - scrapeIdx (String): the current index in the scraperInfo.all Basically which 'scrape' it is
@@ -572,9 +624,9 @@ const WSForm = ({ User }) => {
     let scraperInfoCopy = scraperInfos;
     const lastPopulatedWorkflowIndex = Object.keys(scraperInfos?.all[scrapeIdx].workflow).length -1; // so it's populated (computers start counting at 0)
     const lastWorkflowType = scraperInfos?.all[scrapeIdx].workflow[lastPopulatedWorkflowIndex][0];
-    let sampleArray : [string, {}];
+    let sampleArray : [string, object];
 
-    const appendIndex = String(Object.keys(scraperInfoCopy.all[scrapeIdx].workflow).length);
+    const appendIndex = Object.keys(scraperInfoCopy.all[scrapeIdx].workflow).length;
 
     if(lastWorkflowType === "scrape-action"){
       
@@ -590,14 +642,14 @@ const WSForm = ({ User }) => {
     }
     else if(lastWorkflowType === "wait-time"){
 
-      sampleArray = ["scrape-action", {tag_name: "div", class: ".btn.sample", id: "#blue"}]
+      sampleArray = ["scrape-action", {css_selector: "a.scp"}]
     }
 
     scraperInfoCopy.all[scrapeIdx].workflow[appendIndex] = sampleArray;
 
     setScrapeInfos(scraperInfoCopy);
-    setUpdate((prevUpdate) => { return (prevUpdate +1) % 2});
-
+    assertReadiness();
+    setUpdate((prevUpdate) => {return (prevUpdate +1) % 2});
     return;
   };
 
@@ -641,6 +693,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].global_params.amount_actions_local = Object.keys(scraperInfoCopy.all[scrapeIdx].workflow).length;
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => {return (prevUpdate + 1) % 2});
 
     return;
@@ -679,6 +732,7 @@ const WSForm = ({ User }) => {
     scraperInfoCopy.all[scrapeIdx].global_params.amount_actions_local = Object.keys(scraperInfoCopy.all[scrapeIdx].workflow).length;
 
     setScrapeInfos(scraperInfoCopy);
+    assertReadiness()
     setUpdate((prevUpdate) => {return (prevUpdate + 1) % 2});
 
     return;
@@ -775,8 +829,6 @@ const WSForm = ({ User }) => {
 
       
       for(const wIndex of allWorkflowKeys){
-        
-        console.log(wIndex)
 
         const workflowType = scraperInfoCopy.all[scrapeIdx].workflow[wIndex][0];
         const workflowData = scraperInfoCopy.all[scrapeIdx].workflow[wIndex][1];
@@ -889,7 +941,7 @@ const WSForm = ({ User }) => {
         <div className="w-[50%] h-auto c_row_elm gap-x-5 justify-start" >
           {
             // checks if the scrape is valid, so that the 'Scrape' is either hidden or shown, depending on the validity
-            check_ready({scrapeIdx: null, all: true}) ? 
+            readiness.all ? 
               (
                 <button id={`generate-export-btn`} className="purple_btn" onClick={() => { setLoadingOverlay(false); setCurrentOverlay("exportScrape"); showHideElement({elementId: "overlay-section"}) }} >
                   Save
@@ -911,7 +963,7 @@ const WSForm = ({ User }) => {
 
           {
             /** Will disable the button if results are none. */
-            Object.keys(results).length !== 0 ? 
+            results[0].scrape_runs[0].length !== 0 ? 
               (
                 <button className="purple_btn " onClick={() => {setCurrentOverlay(() => {return 'results'}); showHideElement({elementId: 'overlay-section'})}} 
                   id={"show-result-overlay-btn"}
@@ -933,7 +985,7 @@ const WSForm = ({ User }) => {
         <div className={"w-[50%] h-auto c_row_elm gap-x-5 justify-end"} >
           {
             /** Checks if all scrapes are ready and shows/hides the 'Scrape all' button depending on it. */
-            check_ready({scrapeIdx: null, all: true}) ? 
+            readiness.all ? 
               (
                 <button className="purple_btn" onClick={() => { newSubmit({all: true, scrapeIdx: null}); }}
                   id={"start-all-scrapes-btn"} 
@@ -1003,7 +1055,7 @@ const WSForm = ({ User }) => {
 
                         {
                           // Visual clue showing wether the scrape is valid to submit or not.
-                          check_ready({scrapeIdx: index, all: false}) ? 
+                          readiness[index] ? 
                             (
                               <>
                                 <h3 className="font-inter text-[20px] text-[green]" >
@@ -1057,7 +1109,7 @@ const WSForm = ({ User }) => {
 
                         {
                           // Checks if the current scrape is valid to submit 
-                          check_ready({scrapeIdx: index, all: false}) ? 
+                          readiness[index] ? 
                             (
                               <button id={"start-scrape-btn"} className="purple_btn" onClick={() => { newSubmit({all: false, scrapeIdx: index}); }} >
                                 Submit
@@ -1357,6 +1409,7 @@ const WSForm = ({ User }) => {
                             <input
                               type="number"
                               min={2}
+                              max={10}
                               className={"w-[60px] rounded-xl border-2 border-black text-[16px] pl-2 justify-center h-10 bg-zinc-200 mx-2 font-[800] pr-1 "} 
                               placeholder="Iterations"
                               value={scraperInfos?.all[index].loop.iterations}

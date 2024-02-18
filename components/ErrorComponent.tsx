@@ -8,7 +8,7 @@ const ErrorComponent = ({errorCodes, errorPath} : {errorCodes : object, errorPat
 
   return (
     <>
-      <div key={`error-path-div-${errorPath}`} className=" max-w-[1600px] w-full h-auto bg-stone-300 rounded-xl">
+      <div key={`error-path-div-${errorPath}`} className=" max-w-[1600px] w-[80%] h-auto bg-stone-300 rounded-xl">
 
         <h1 id={errorPath} className={" text-left bg-stone-400 text-[26px] font-[700] p-4 w-full max-w-[1600px] rounded-ss-xl rounded-se-xl h-auto"} > {errorTranslator[errorPath] + ` (${errorPath})`} </h1>
         <hr className="border-black border-[2px]" />
@@ -24,7 +24,7 @@ const ErrorComponent = ({errorCodes, errorPath} : {errorCodes : object, errorPat
                 {
                   Object.keys(errorCodes[errorPath][errorType]).map((errorIndex) => {
                     return(
-                      <div id={`${errorPath}-${errorType}-${errorIndex}`} className="w-full h-auto ">
+                      <div key={errorIndex} id={`${errorPath}-${errorType}-${errorIndex}`} className="w-full h-auto ">
                         <div className="flex flex-row gap-x-2 h-auto w-full items-end justify-start" >
                           <h3 className="w-auto h-auto font-[600] text-[20px] text-left ml-10 p-1">{errorIndex}</h3>
                           {

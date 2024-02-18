@@ -433,7 +433,8 @@ const PreviewWS = ({ previewData, theIndex }) => {
                             [...Object.keys(previewData.info.all[index].workflow)].map((workflowIndex) => {
 
                               return (
-                                  <PreviewWorkflowType
+                                  <PreviewWorkflowType 
+                                    key={workflowIndex}
                                     scraperInfos={previewData.info}
                                     scrapeIdx={index}
                                     workflowIndex={Number(workflowIndex)}

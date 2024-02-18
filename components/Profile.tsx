@@ -9,7 +9,20 @@ import { adjustTextareaHeight } from "@utils/generalFunctions";
 
 const Profile = ({ User }) => {
 
-  const [ userData, setUserData ] = useState(null);
+  const defaultUserData : ProfileData = {
+    email: "loading...",
+    username: "loading...",
+    provider: "loading...",
+    description: "loading...",
+    api_options: {
+      data_cleanup: false,
+      multithreading: false,
+      multiprocessing: false,
+      max_scrapes: "loading...",
+    },
+  }
+
+  const [ userData, setUserData ] = useState(defaultUserData);
   const [ update, setUpdate ] = useState(1);  
   const [ apiOptions, setApiOptions ] = useState(null);
 
@@ -17,7 +30,7 @@ const Profile = ({ User }) => {
 
   const getProfileData = async () : Promise<void> => {
 
-    const pullData = {filter : {_id : User.id}, projection: {"__v": 0, "all_saved_scrapes": 0}};
+    const pullData = {filter : {_id : User.id}, projection: {"__v": 0, "all_saved_scrapes": 0,  "image" : 0}};
 
     const pull_operation = await pullFromDb({apiKey: "felix12m", dbName: "yows_users", collectionName: "users", data: pullData})
 
@@ -158,7 +171,7 @@ const Profile = ({ User }) => {
               )
               :
               (
-               Object.keys(apiOptions).map((apiOptionKey) => { return ( <ApiOption apiOptionData={{allowed: Boolean(userData.api_options[apiOptionKey]), type: apiOptionKey}} /> )})
+               Object.keys(apiOptions).map((apiOptionKey) => { return ( <ApiOption key={apiOptionKey} apiOptionData={{allowed: Boolean(userData.api_options[apiOptionKey]), type: apiOptionKey}} /> )})
               
               )
           }

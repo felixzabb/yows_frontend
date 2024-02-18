@@ -48,13 +48,6 @@ type ScraperInfoResults = {
     scrape_runs : {
       [index : number] : any[]
     }
-    workflow_executions : {
-      [index : number] : {
-        type : string
-        given_data : {}
-        executions_status : "succesfull" | "unsuccesfull" |"empty-status"
-      }
-    }
   }
 }
 
@@ -80,27 +73,27 @@ type FetchedScraperInfos = {
 
 // Returned object when fetching profiles in "Profile.tsx"
 type ProfileData = {
-  _id : string
+  _id? : string
   email : string
   username : string
   provider : string
-  image : string
+  image? : string
   description : string
-  api_options : {
+  api_options? : {
     data_cleanup : boolean
     multithreading : boolean
     multiprocessing : boolean
     max_scrapes : string
   }
-  api_interaction : {
+  api_interaction? : {
     api_keys : []
     blocked : boolean
     price_per_request : number | null
     sub_runtime : Date | null
     sub_id : string | null
   }
-  all_saved_scrapes : {scrape_object : string }[]
-  __v : number
+  all_saved_scrapes? : {scrape_object : string }[]
+  __v? : number
 
 }
 

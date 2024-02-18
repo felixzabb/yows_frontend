@@ -8,10 +8,15 @@ import { ScaleLoader } from "react-spinners";
 import PreviewWS from "./PreviewWS";
 import ResultOverlay from "./ResultOverlay";
 import { adjustTextareaHeight, showHideElement } from "@utils/generalFunctions";
-import { emptyResults } from "@utils/defObjects";
 
 
 const SavedScrapes = ({ User }) => {
+
+  const emptyResults : ScraperInfoResults = {
+    0 : {
+      scrape_runs : {0 : []}
+    }
+  }
 
   const [ data, setData ] = useState(null);
   const [ update, setUpdate ] =useState(1);
@@ -52,7 +57,8 @@ const SavedScrapes = ({ User }) => {
       
     await deleteScrape({apiKey: "felix12m", scrapeId: data[getIdx]._id, userId: User.id});
 
-    await getAllSavedScrapes();
+    // positive deletion, revalidation only happens on refresh of the page
+    data.splice(getIdx, 1);
 
     setUpdate((prevUpdate) => { return (prevUpdate +1 ) % 2});
 
@@ -65,7 +71,6 @@ const SavedScrapes = ({ User }) => {
 
     setData(pull_operation.found);
     setMaxScrapes(pull_operation.max_scrapes);
-
     return;
   };
 

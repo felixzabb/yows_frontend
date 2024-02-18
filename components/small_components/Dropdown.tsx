@@ -31,7 +31,7 @@ export default function Dropdown({options} : {options : {
             {
               Object.keys(options).map((option) => {
                 return(
-                  <Menu.Item>
+                  <Menu.Item key={option}>
                     {({ active }) => (
                       <Link href={options[option].href} className={classNames(
                             active ? 'bg-purple-500 text-black' : 'text-black',
