@@ -42,7 +42,7 @@ const DialogOverlay = ({ results, load, type, generateExport } : {results : obje
           </label>
         </div>
         
-        <button id={`submit-link-btn`} className='purple_btn' onClick={(e) => { e.preventDefault(); load({id: returnInputElementValue({elementId: "dialog-ov-id-input"}), resultsNeeded: loadWithResults, confimNeeded: true});}} >
+        <button id={`submit-link-btn`} className='purple_btn' onClick={(e) => { e.preventDefault(); load({id: returnInputElementValue({elementId: "dialog-ov-id-input"}), resultsNeeded: loadWithResults, confirmNeeded: true});}} >
           Submit
         </button>
       </form>
