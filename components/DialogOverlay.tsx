@@ -4,7 +4,7 @@ import { useState } from "react";
 import { returnInputElementValue } from "@utils/generalFunctions";
 
 const DialogOverlay = ({ results, load, type, generateExport } : {results : object, 
-                                                                  load : ({id, resultsNeeded, confimNeeded} : {id : string | (() => string), resultsNeeded : boolean, confimNeeded : boolean}) => Promise<void>, 
+                                                                  load : ({id, resultsNeeded, confirmNeeded} : {id : string | (() => string), resultsNeeded : boolean, confirmNeeded : boolean}) => Promise<void>, 
                                                                   type : string, 
                                                                   generateExport : ({name, description, withRes} : {name : string | (() => string), description : string | (() => string), withRes : boolean}) => Promise<void>}) => {
 
