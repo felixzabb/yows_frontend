@@ -19,7 +19,7 @@ const Profile = ({ User }) => {
       multithreading: false,
       multiprocessing: false,
       max_scrapes: "loading...",
-    },
+    }
   }
 
   const [ userData, setUserData ] = useState(defaultUserData);
@@ -196,7 +196,7 @@ const Profile = ({ User }) => {
         <div className="w-full h-[60px] c_row_elm gap-x-5 relative" >
 
           {
-            userData?.api_interaction?.api_keys == 0 ?
+            userData?.api_interaction?.api_keys?.length === 0 ?
               ( 
                 <>
                   <div className="w-auto h-auto flex flex-col items-start pl-1 " >
