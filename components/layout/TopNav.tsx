@@ -75,7 +75,7 @@ const TopNav = () => {
 										(
 											<Image
 												id="color-mode-toggle"
-												src={`/assets/icons/colorMode/dark_mode_moon`}
+												src="/assets/icons/colorMode/dark_mode_moon.svg"
 												alt="Color mode switch"
 												width={34}
 												height={34}
@@ -88,7 +88,7 @@ const TopNav = () => {
 										(
 											<Image
 												id="color-mode-toggle"
-												src={`/assets/icons/colorMode/light_mode_sun`}
+												src="/assets/icons/colorMode/light_mode_sun.svg"
 												alt="Color mode switch"
 												width={34}
 												height={34}
