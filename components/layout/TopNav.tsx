@@ -12,10 +12,6 @@ const TopNav = () => {
 	
 	const { data: theSession, status: authStatus } = useSession();
 	const [colorMode, setColorMode ] = useState("");
-	const pathTranslator = {
-		dark: "dark_mode_moon.svg",
-		light: "light_mode_sun.svg"
-	}
 
 	useEffect(() => {
 		setColorMode(window.localStorage.getItem("colorMode"));
@@ -74,16 +70,34 @@ const TopNav = () => {
 							<hr id="topNav-options-separator-0" className="h-[40px] w-[2px] bg-gray-400 " />
 
 							<div id="topNav-options-wrapper-0" className="w-[100px] h-[50px] flex flex-row items-center gap-x-4" >
-								<Image
-									id="color-mode-toggle"
-									src={`/assets/icons/colorMode/${pathTranslator[colorMode]}`}
-									alt="Color mode switch"
-									width={34}
-									height={34}
-									className="object-contain cursor-pointer"
-									onClick={switchColorMode}
-								
-								/>
+								{
+									colorMode === "dark" ?
+										(
+											<Image
+												id="color-mode-toggle"
+												src={`/assets/icons/colorMode/dark_mode_moon`}
+												alt="Color mode switch"
+												width={34}
+												height={34}
+												className="object-contain cursor-pointer"
+												onClick={switchColorMode}
+											
+											/>
+										)
+										:
+										(
+											<Image
+												id="color-mode-toggle"
+												src={`/assets/icons/colorMode/light_mode_sun`}
+												alt="Color mode switch"
+												width={34}
+												height={34}
+												className="object-contain cursor-pointer"
+												onClick={switchColorMode}
+											
+											/>
+										)
+								}
 
 								<Link id="topNav-profile-link" href='/profile?section=general'>
 									<Image
