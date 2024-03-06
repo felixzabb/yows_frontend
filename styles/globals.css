@@ -18,9 +18,16 @@
 
 *{
   
-  @apply text-center  text-black;
+  @apply font-sans text-center text-text-color-light dark:text-text-color-dark;
 }
 
+input{
+  @apply autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s];
+}
+
+textarea{
+  @apply autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s];
+}
 
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
@@ -39,51 +46,6 @@
   @apply flex flex-row;
 }
 
-/* LAYOUT ELEMENTS -----------------------------------------------------------------*/
-
-
-.layout_main{
-
-  @apply justify-center w-[100dvw];
-  
-}
-
-.layout_nav_header{
-
-  @apply w-full mt-5 h-[50px];
-}
-
-.nav{
-
-  @apply flex flex-row pr-12 pl-12 justify-between w-full h-[50px];
-}
-
-
-.new_scrape_sec{
-
-  @apply h-full justify-between rounded-xl shadow-md bg-zinc-100 w-full
-  scale-x-[-1] border-[3px] border-[blueviolet]  ;
-
-  box-shadow: 0px 3px 15px #555150;
-}
-
-.new_part_of_form{
-
-  @apply min-h-[40px] h-auto gap-y-1 w-full ;
-}
-
-.new_scrape_info_options{
-
-  @apply justify-between p-2 bg-zinc-50 w-full min-h-[8dvh] rounded-xl ;
-
-  box-shadow: 0px 2px 2px darkslateblue;
-}
-
-.new_options_nav{
-
-  @apply gap-x-5 m-1 justify-between p-2 border-[3px] border-[blueviolet] rounded-[12px] w-[90%] h-auto;
-}
-
 /* TEXT ELEMENTS -----------------------------------------------------------------*/
 
 .head_text{
@@ -95,47 +57,25 @@
 
   @apply font-[Inter] text-[40px] my-5;
 }
-
-.sub_text{
-
-  @apply  text-[20px];
-}
-
 .new_action_text{
 
   @apply font-inter text-[14px] font-[700] w-[75px]; /* maybe increase font-size*/
 }
 /* FONTS -----------------------------------------------------------------*/
 
-.f_black_Inter{
 
-  @apply  text-[20px];
-}
 
 /* BUTTONS -----------------------------------------------------------------*/
 
 .purple_btn{
 
-  @apply shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-purple-500 bg-purple-400 w-auto p-1 px-2 min-w-[60px]  rounded-[6px] h-[48px] text-[16px] font-[600] ;
+  @apply ring-gray-300 hover:bg-purple-500 bg-purple-400 w-auto p-1 px-2 min-w-[60px]  rounded-[6px] h-[48px] text-[16px] font-[600] ;
   
 }
 
 .row_options_button{
 
-  @apply border-[2px] w-fit max-w-[130px] p-1 rounded-[6px] text-center font-[600] ;
-}
-
-
-/* INPUTS -----------------------------------------------------------------*/
-
-/* GRADIENTS -----------------------------------------------------------------*/
-
-.gray_gradient{
-  
-  background-image: linear-gradient(to bottom, rgba(238, 223, 223, 0.3), rgba(155, 107, 209, 0.3));
-  background-size: cover;
-  background-repeat: no-repeat;
-  
+  @apply border-[2px] border-slate-800 dark:text-[#c9c9c9] dark:border-slate-500 w-[94px] p-1 pl-2 rounded-lg text-[16px] text-start font-[600] ;
 }
 
 /* ANIMATION ELEMENTS -----------------------------------------------------------------*/
@@ -153,11 +93,12 @@
   grid-template-columns: repeat(auto-fill, 266px);
 }
 
+
 .rows_grid{
 
   display: grid;
   row-gap: 20px;
-  grid-template-columns: repeat(auto-fill, 50%);
+  grid-template-columns: repeat(auto-fill, max(50%, 430px));
   align-items: start;
   align-self: self-start;
 }
@@ -167,13 +108,22 @@
   @apply w-[auto] h-[210px] p-1;
 }
 
+.scraper_grid{
+
+  display: grid;
+  row-gap: 30px;
+  column-gap: 30px;
+  grid-template-columns: repeat(auto-fill, 610px);
+  align-items: start;
+  align-self: self-start;
+  height: auto;
+}
 /* TOOLTIPS */
 
 .workflow_action_drop_container{
 
   @apply min-w-[190px] max-w-[190px] h-full border-2 border-[darkslategray] p-1;
 }
-
 
 
 .tooltip_text_main{
@@ -188,7 +138,7 @@
 
 .tooltip{
 
-  @apply absolute bg-primary-tooltip-bg font-inter text-[14px] p-1 mt-2 w-max max-w-[350px] h-max border-[3px] border-[blueviolet]  rounded-xl z-10;
+  @apply absolute bg-[#ffffff] font-inter text-[14px] p-1 mt-2 w-max max-w-[350px] h-max border-[3px] border-[blueviolet]  rounded-xl z-10;
 
   box-shadow: 0px 0px 8px darkslategray;
 }

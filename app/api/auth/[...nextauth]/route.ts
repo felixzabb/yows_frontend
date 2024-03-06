@@ -38,24 +38,24 @@ const handler = NextAuth({
                     console.log("CREATING USER!");
                     await User.create({
                         email: profile.email,
-                        username: profile.name.replaceAll(" ", "").toLowerCase(),
+                        alias: "",
+                        provider: "google",
                         image: profile.image,
                         description: "No description.",
-                        api_options : {
-                            multiprocessing: false,
-                            multithreading: false,
-                            data_cleanup: false,
-                            max_scrapes: "10",
-                        },
-                        provider: "Google",
-                        api_interaction: {
-                            api_keys: [],
-                            blocked: false,
-                            price_per_request: null,
-                            sub_runtime: null,
-                            sub_id: null,
-                        },
                         all_saved_scrapes : [],
+                        api: {
+                            api_keys: [],
+                            rate_limit: 10,
+                        },
+                        subscription: {
+                            subscribed: 0,
+                            tier: 0,
+                            scraper_storage: 10,
+                            max_runtime: 180,
+                            max_loop_iterations: 10,
+                            subscription_end: "null",
+                            subscribed_months: 0,
+                        },
                         
                     });
                 }

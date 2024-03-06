@@ -8,12 +8,8 @@ const UserSchema = new Schema({
         required: [true, 'Email is required'],
 
     },
-    username: {
+    alias: {
         type: String,
-        required: [true, 'Username is required'],
-        match: [/^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._ñÑ]+(?<![_.])$/, "Username invalid, it should contain 8-20 alphanumeric letters and be unique!"]
-
-
     },
     provider: {
         type: String,
@@ -24,44 +20,41 @@ const UserSchema = new Schema({
     description: {
         type: String,
     },
-    api_options : {
-
-        data_cleanup: {
-            type: Boolean,
-            required: [true, 'data_cleanup option is required']
-        },
-        multithreading: {
-            type: Boolean,
-            required: [true, 'multithreading option is required'],
-        },
-        multiprocessing: {
-            type: Boolean,
-            required: [true, 'multiprocess option is required'],
-        },
-        max_scrapes: {
-            type: String,
-            required: [true, 'max number of scrapes required'],
-        }
-    },
-    api_interaction: {
-
-        api_keys: {
-            type: Array,
-        },
-        blocked: {
-            type: Boolean,
-        },
-        price_per_request: {
-        },
-        sub_runtime: {
-        },
-        sub_id: {
-        },
-    },
-
     all_saved_scrapes : {
         type: Array,
     },
+    api: {
+        type: Object,
+        api_keys: {
+            type: Array
+        },
+        rate_limit: {
+            type: Number
+        },
+    },
+    subscription: {
+        type: Object,
+        subscribed: {
+            type: Number
+        },
+        tier: {
+            type: Number
+        },
+        scraper_storage: {
+            type: Number
+        },
+        max_runtime: {
+            type: Number
+        },
+        max_loop_iterations: {
+            type: Number
+        },
+        subscription_end: {
+        },
+        subscribed_months: {
+            type: Number
+        },
+    }
 
 
 });

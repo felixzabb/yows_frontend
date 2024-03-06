@@ -26,13 +26,14 @@
     ]
   },
   "include": [
+    "custom-types.d.ts",
     "next-env.d.ts",
-    "new-types.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "app/api/auth/[...nextauth]/route.ts"  ],
+    "**/*.tsx",
+    "app/api/auth/[...nextauth]/route.ts",
+  ],
   "exclude": [
-    "node_modules"
-  ]
+    "node_modules",
+  ],
 }

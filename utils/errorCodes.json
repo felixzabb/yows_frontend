@@ -37,5 +37,14 @@
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
       }
     }
+  },
+  "SCRAPE" : {
+    "REQ" : {
+      "1" : {
+        "tags" : ["client-side", "bad-request"],
+        "desc" : "You had more than 10 scrapes in your scraper. 10 is the maximum.",
+        "possibleFix" : "Have a maximum of 10 scrapes in your scraper."
+      }
+    }
   }
 }

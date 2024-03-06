@@ -2,23 +2,19 @@
 
 import { useSession } from "next-auth/react";
 import Loading from "@app/loading";
-import Profile from "@components/Profile";
+import Profile from "@components/user/profile/Profile";
 
 
 const ProfilePage = () => {
   
-  const { data: theSession } = useSession();
+  const { data: theSession, status: AuthStatus } = useSession();
 
   return (
     <>
       {
         theSession?.user !== undefined ? 
           ( 
-            <>
-              <h1 className="subhead_text" >Welcome to your Profile, {theSession?.user.name}</h1>
-              <Profile User={theSession?.user} />
-            </>
-            
+            <Profile User={theSession?.user} AuthStatus={AuthStatus} />            
           ) 
           :   
           (

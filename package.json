@@ -14,11 +14,15 @@
     "@react-email/render": "^0.0.12",
     "bcrypt": "^5.1.1",
     "child_process": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "cors": "^2.8.5",
     "fs": "^0.0.1-security",
     "headlessui": "^0.0.0",
+    "lucide-react": "^0.343.0",
     "mongodb": "^6.2.0",
     "mongoose": "^7.6.3",
-    "next": "^14.1.0",
+    "next": "^14.1.2",
     "next-auth": "^4.24.4",
     "react": "^18",
     "react-countdown-circle-timer": "^3.2.1",
@@ -26,7 +30,9 @@
     "react-email": "^2.0.0",
     "react-spinners": "^0.13.8",
     "react-timer-hook": "^3.0.7",
-    "resend": "^3.0.0"
+    "resend": "^3.0.0",
+    "tailwind-merge": "^2.2.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "autoprefixer": "^10",

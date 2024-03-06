@@ -1,5 +1,5 @@
 "use client"
-import ErrorComponent from "@components/ErrorComponent";
+import ErrorComponent from "@components/docs/ErrorComponent";
 import errorCodes from "@utils/errorCodes.json";
 import { useRouter } from "next/navigation";
 import { returnInputElementValue } from "@utils/generalFunctions";

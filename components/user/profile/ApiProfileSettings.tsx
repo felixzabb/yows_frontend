@@ -1,0 +1,114 @@
+"use client";
+
+import { generateApiKey } from "@utils/api_funcs";
+import Image from "next/image";
+import Link from "next/link";
+
+const ApiProfileSettings = ({User, userData, save, push, setUserData}) => {
+
+  const generateNewApiKey = async () => {
+
+    const createOperation = await generateApiKey({apiKey: "felix12m", userId: User.id});
+    setUserData((prevUserData) => {
+      prevUserData.api.api_options.push(createOperation.created_item);
+      return prevUserData;
+    });
+  };
+  
+  return (
+    <section id="api-settings-container" className="flex flex-col items-start pl-10 w-full h-full justify-start gap-y-8 pt-10" >
+
+      <div id="api-keys-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[calc(100%-50px)] max-w-[800px] h-auto min-h-[120px] border-2 border-gray-600 dark:border-gray-300" >
+        <h3 id="api-keys-setting-heading" className="text-[22px] font-[600]" >API-keys</h3>
+
+        <p id="api-keys-setting-description" className="text-start text-[16px] font-[400]" >
+          To interact with the API you need an API-key.
+          <br />
+          You can have a maximum of 3!
+        </p>
+
+        <form id="api-keys-setting-form" onSubmit={(e) => {e.preventDefault()}} className="relative w-full h-auto flex items-start" >
+
+          <div id="api-keys-container" className="flex flex-col lg:flex-row h-min items-start gap-y-2 gap-x-2 w-full min-h-[40px]" >
+
+            {
+              userData.api.api_keys.length === 0 && (
+                <span id="no-api-keys-clue" className="text-[18px] font-[600]" >You have no API-keys!</span>
+              )
+            }
+            
+            {
+              userData.api.api_keys.length > 0 && userData.api.api_keys.map((key : string) => {
+
+                return(
+                  <div key={key} id={`api-key-wrapper-${key}`} className="flex flex-row items-center gap-x-2 " >
+
+                    <Image
+                      src={"/assets/icons/generic/copy.svg"}
+                      alt={"copy api-key"}
+                      className="cursor-pointer mb-[-5px]"
+                      width={30}
+                      height={30}
+                    />
+
+                    <span id={`api-key-${key}`} className="text-[18px] font-[600]" >{`key-${userData.api.api_keys.indexOf(key)}`}</span>
+
+                    <Image
+                      src={"/assets/icons/generic/minus_sign_black.svg"}
+                      alt={"delete api-key"}
+                      className="cursor-pointer rounded-lg bg-red-500 p-[2px] mb-[-5px]"
+                      width={20}
+                      height={20}
+                      onClick={() => {
+                        const allKeys : string[] = userData.api.api_keys;
+                        allKeys.splice(allKeys.indexOf(key), 1);
+                        save({setting: "api.api_keys", newValue: allKeys, nested: true, nestedPath: ["api", "api_keys"]});
+                      }}
+                    />
+
+                    <hr id={`api-keys-separator-${key}`} className="h-[36px] mb-[-5px] w-[1px] bg-black dark:bg-white opacity-20 " />
+
+                  </div>
+                );
+              })
+            }
+          </div>
+          
+          {
+            userData.api.api_keys.length < 3 &&
+              (
+                <button disabled={userData.api.api_keys.length > 3} id="api-keys-setting-save" onClick={() => { generateNewApiKey(); }}
+                  className=" absolute bottom-0 right-0 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
+                  Add key
+                </button>
+              )
+          }
+          
+        </form>
+      </div>
+
+      <div id="rate-limit-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[calc(100%-50px)] max-w-[800px] h-auto min-h-[120px] border-2 border-gray-600 dark:border-gray-300" >
+        <h3 id="rate-limit-setting-heading" className="text-[22px] font-[600]" >Rate limit</h3>
+
+        <p id="rate-limit-setting-description" className="text-start text-[16px] font-[400]" >
+          You can only send so many requests per day, this is your rate limit.
+          <br />
+          To see how much it costs please visit <Link href="/billing?product=rate_limit" > <span className="underline font-[600]" >Billing.</span> </Link>
+        </p>
+
+        <form id="rate-limit-setting-form" onSubmit={(e) => {e.preventDefault()}} className="relative w-full h-auto flex items-start min-h-[34px]" >
+
+          <span className="text-[18px] font-[600]" >{`Current: ${userData.api.rate_limit}`}</span>
+
+          <button id="increase-rate-limit" onClick={() => { push("/buy?product=rate_limit"); }}
+            className=" absolute bottom-0 right-0 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
+            Increase limit
+          </button>
+        </form>
+      </div>
+
+    </section>
+  );
+};
+
+export default ApiProfileSettings;

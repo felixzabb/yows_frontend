@@ -1,3 +1,4 @@
+import { PostToDbReturnData, PullFromDbReturnData, PutToDbReturnData, SaveScrapeReturnData, RunScrapeReturnData, DeleteFromDbReturnData, ScrapeInfoSave, ChangePassword, GenerateKey } from "@custom-types";
 import mongoose from "mongoose";
 
 let isConnected = false;
@@ -173,3 +174,46 @@ export const pullSavedScrapes = async ({apiKey, userId} : {apiKey : string, user
 
     return fetchData;
 };
+
+export const changePassword = async ({apiKey, userId, password} : {apiKey : string, userId : string, password : string}) : Promise<PutToDbReturnData> => {
+
+    const changePasswordUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/change_password?" + new URLSearchParams(
+      {
+        api_key: apiKey,
+      }
+    );
+
+    const fetchData : Promise<PutToDbReturnData> = await fetch(changePasswordUrl, {
+      method: 'PUT',
+      body: JSON.stringify({uid: userId, password: password}),
+    })
+    .then(response => {
+        if(!response.ok){console.log("Fetch to change password failed."); return response.status;};
+
+        return response.json();
+    });
+
+    return fetchData;
+};
+
+export const generateApiKey = async ({apiKey, userId} : {apiKey : string, userId : string}) : Promise<PostToDbReturnData> => {
+
+    const generateKeyUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/generate_api_key?" + new URLSearchParams(
+      {
+        api_key: apiKey,
+      }
+    );
+
+    const fetchData : Promise<PostToDbReturnData> = await fetch(generateKeyUrl, {
+      method: 'POST',
+      body: JSON.stringify({uid: userId}),
+    })
+    .then(response => {
+        if(!response.ok){console.log("Fetch to generate API-key failed."); return response.status;};
+
+        return response.json();
+    });
+
+    return fetchData;
+};
+
