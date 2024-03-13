@@ -1,219 +1,255 @@
-import { PostToDbReturnData, PullFromDbReturnData, PutToDbReturnData, SaveScrapeReturnData, RunScrapeReturnData, DeleteFromDbReturnData, ScrapeInfoSave, ChangePassword, GenerateKey } from "@custom-types";
+import { PostToDbReturn, PullFromDbReturn, PutToDbReturn, RunScrapeReturnData, GenerateApiKeyReturn, DeleteUserReturn, CreateUserReturn, SaveScraperReturn, DeleteFromDbReturn, SavedScraper, BasicApiReturn, CheckUserValidReturn, ScraperInfos } from "@custom-types";
 import mongoose from "mongoose";
+
+const handleReturnData = async <dataType>({res} : {res : Response}) => {
+
+  let resData : BasicApiReturn;
+
+  if (!res.ok) {
+    if (res.status === 500) {
+      resData = { acknowledged: 0, errors: ["SERVER-FUNCTION-1"] };
+    }
+    else {
+      const parsed = await res.json()
+      resData = parsed.detail;
+    };
+  }
+  else {
+    resData = await res.json()
+  }
+
+  return resData as dataType;
+};
 
 let isConnected = false;
 
-export const connectToDb = async ({dbName} : {dbName : string}) => {
+export const connectToDb = async ({ dbName }: { dbName: string }) => {
 
-    mongoose.set('strictQuery', true)
+  mongoose.set('strictQuery', true)
 
-    if(isConnected){
-        console.log('MongoDB already connected');
-        return;
-    }
+  if (isConnected) {
+    console.log('MongoDB already connected');
+    return;
+  }
 
-    try{
-        await mongoose.connect(process.env.MONGO_DB_URI, {
+  try {
+    const dd = await mongoose.connect(process.env.MONGO_DB_URI, {
 
-            dbName: dbName,
-        });
+      dbName: dbName,
+    });
 
-        isConnected = true;
+    isConnected = true;
 
-        console.log(`Connected to ${dbName}`);
-    }
-    catch(error){
-        console.log(error);
-    }
+    console.log(`Connected to ${dbName}`);
+  }
+  catch (error) {
+    console.log(error);
+  }
 
 };
 
-export const postToDb = async ({apiKey, dbName, collectionName, data, checkDuplicates} : {apiKey : string, dbName : string, collectionName : string, data : object[], checkDuplicates : number}) : Promise<PostToDbReturnData> => {
+export const postToDb = async ({ apiKey, dbName, collectionName, data, checkDuplicates }: { apiKey: string, dbName: string, collectionName: string, data: object[], checkDuplicates: number }): Promise<PostToDbReturn> => {
 
-    const postUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/post?" + new URLSearchParams({
+  const postUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/db/post?" + new URLSearchParams({
 
-        api_key : apiKey,
-        db_name : dbName,
-        collection_name : collectionName,
-        check_dupe : String(checkDuplicates),
-    });
+    api_key: apiKey,
+    db_name: dbName,
+    collection_name: collectionName,
+    check_dupe: String(checkDuplicates),
+  });
 
-    const fetchData : Promise<PostToDbReturnData> = await fetch(postUrl, {method: "POST", body: JSON.stringify({data : data})})
-    .then((response) => {
-        if(!response.ok){ console.log("Fetch to post data failed."); return response.status;};
+  const res: Response = await fetch(postUrl, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
 
-        return response.json();
-    });
-
-    return fetchData;
+  return await handleReturnData<PostToDbReturn>({res: res});
 };
 
-export const pullFromDb = async ({apiKey, dbName, collectionName, data} : {apiKey : string, dbName : string, collectionName : string, data : {filter: object, projection: object | string[]}}) : Promise<PullFromDbReturnData<any>> => {
+export const pullFromDb = async <pullType>({ apiKey, dbName, collectionName, data }: { apiKey: string, dbName: string, collectionName: string, data: { filter: object, projection: object | string[] } }): Promise<PullFromDbReturn<pullType>> => {
 
-    const pullUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/pull?" + new URLSearchParams({
+  const pullUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/db/pull?" + new URLSearchParams({
 
-        api_key : apiKey,
-        db_name : dbName,
-        collection_name : collectionName,
-        data : JSON.stringify(data),
-    });
+    api_key: apiKey,
+    db_name: dbName,
+    collection_name: collectionName,
+    data: JSON.stringify(data),
+  });
 
-    const fetchData : Promise<PullFromDbReturnData<object>> = await fetch(pullUrl, {method: "GET"})
-    .then((response) => {
-        if(!response.ok){ console.log("Fetch to pull data failed."); return response.status;};
+  const res: Response = await fetch(pullUrl, {
+    method: "GET"
+  });
 
-        return response.json()
-    });
-
-    return fetchData;
+  return await handleReturnData<PullFromDbReturn<pullType>>({res: res});
 };
 
-export const putToDb = async ({apiKey, dbName, collectionName, data} : {apiKey : string, dbName : string, collectionName : string, data : {filter : object, update : object}}) : Promise<PutToDbReturnData> => {
+export const putToDb = async ({ apiKey, dbName, collectionName, data }: { apiKey: string, dbName: string, collectionName: string, data: { filter: object, update: object } }): Promise<PutToDbReturn> => {
 
-    const putUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/db/put?" + new URLSearchParams({
+  const putUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/db/put?" + new URLSearchParams({
 
-        api_key : apiKey,
-        db_name : dbName,
-        collection_name : collectionName,
-    });
+    api_key: apiKey,
+    db_name: dbName,
+    collection_name: collectionName,
+  });
 
-    const fetchData : Promise<PutToDbReturnData> = await fetch(putUrl, {method: "PUT", body: JSON.stringify({data : data})})
-    .then((response) => {
-        if(!response.ok){ console.log("Fetch to put data failed."); return response.status;};
+  const res: Response = await fetch(putUrl, {
+    method: "PUT", body: JSON.stringify(data)
+  });
 
-        return response.json()
-    });
-
-    return fetchData;
+  return await handleReturnData<PutToDbReturn>({res: res});
 
 };
 
-export const saveScrape = async ({apiKey, userId, data} : {apiKey : string, userId : string, data : object[]}) : Promise<SaveScrapeReturnData> => {
+export const saveScraper = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: object[] }): Promise<SaveScraperReturn> => {
 
-    const saveScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/save_scrape?" + new URLSearchParams({
-        api_key: apiKey,
-        uid: userId,
-    });
+  const saveScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/save_scrape?" + new URLSearchParams({
+    api_key: apiKey,
+    uid: userId,
+  });
 
-    const fetchData : Promise<SaveScrapeReturnData> = fetch(saveScrapeUrl, {method: "POST", body: JSON.stringify({data: data})})
-    .then((response) => {
-        if(!response.ok){console.log("Fetch to save scrape failed."); return response.status;}
+  const res: Response = await fetch(saveScrapeUrl, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
 
-        return response.json();
-    });
-
-    return fetchData;
+  return await handleReturnData<SaveScraperReturn>({res: res});
 };
 
-export const runScrape = async ({apiKey, userId, data} : {apiKey : string, userId : string, data : any}) : Promise<RunScrapeReturnData> => {
+export const runScrape = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: ScraperInfos }): Promise<RunScrapeReturnData> => {
 
-    
-    const runScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/scrape/run_scrape?" + new URLSearchParams({
-        api_key: apiKey,
-        uid: userId,
-    }); 
-    
+  const runScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/scrape/run_scrape?" + new URLSearchParams({
+    api_key: apiKey,
+    uid: userId,
+  });
 
-    /**
-     * //  aws config
-    const runScrapeUrl = "https://m2nzob5pbopzmzqyfvb3nrsqbu0hzwro.lambda-url.eu-central-1.on.aws/" + new URLSearchParams({
-        uid: userId,
-    }); 
-     */
+  const res: Response = await fetch(runScrapeUrl, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 
-    const fetchData : Promise<RunScrapeReturnData> = await fetch(runScrapeUrl, {
-      method: 'POST',
-      body: data,
-    })
-    .then((response) => {
-        if(!response.ok){console.log("Fetch to run scrape failed."); return response.status;};
+  return await handleReturnData<RunScrapeReturnData>({res: res});
+}
 
-        return response.json();
-    });
+export const deleteScrape = async ({ apiKey, scrapeId, userId }: { apiKey: string, scrapeId: string, userId: string }): Promise<DeleteFromDbReturn> => {
 
-    return fetchData;
+  const deleteScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/delete_scrape?" + new URLSearchParams({
+    api_key: apiKey,
+    scrape_id: scrapeId,
+    uid: userId,
+  });
+
+  const res: Response = await fetch(deleteScrapeUrl, {
+    method: "DELETE",
+  });
+
+  return await handleReturnData<DeleteFromDbReturn>({res: res});
 };
 
-export const deleteScrape = async ({apiKey, scrapeId, userId} : {apiKey : string, scrapeId : string, userId : string}) : Promise<DeleteFromDbReturnData> => {
+export const pullSavedScrapes = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<PullFromDbReturn<SavedScraper>> => {
 
-    const deleteScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/delete_scrape?" + new URLSearchParams({
+  const getSavedScrapesUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/load_saved_scrapes?" + new URLSearchParams(
+    {
       api_key: apiKey,
-      scrape_id: scrapeId,
+      uid: userId
+    }
+  );
+
+  const res: Response = await fetch(getSavedScrapesUrl, {
+    method: 'GET',
+  });
+
+  return await handleReturnData<PullFromDbReturn<SavedScraper>>({res: res});
+};
+
+export const changePassword = async ({ apiKey, userId, password }: { apiKey: string, userId: string, password: string }): Promise<PutToDbReturn> => {
+
+  const changePasswordUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/change_password?" + new URLSearchParams(
+    {
+      api_key: apiKey,
       uid: userId,
-    });
+      np: password
+    }
+  );
 
-    const fetchData : Promise<DeleteFromDbReturnData> = await fetch(deleteScrapeUrl, {
-      method: "DELETE",
-    })
-    .then((response) => {
-      if(!response.ok){console.log("Fetch to delete scrape failed."); return response.status;};
+  const res: Response = await fetch(changePasswordUrl, {
+    method: 'PUT',
+  });
 
-      return response.json();
-    });
-
-    return fetchData;
+  return await handleReturnData<PutToDbReturn>({res: res});
 };
 
-export const pullSavedScrapes = async ({apiKey, userId} : {apiKey : string, userId : string}) : Promise<PullFromDbReturnData<ScrapeInfoSave>> => {
+export const generateApiKey = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<GenerateApiKeyReturn> => {
 
-    const getSavedScrapesUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/load_saved_scrapes?" + new URLSearchParams(
-      {
-        api_key: apiKey,
-        uid: userId
-      }
-    );
+  const generateKeyUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/generate_api_key?" + new URLSearchParams(
+    {
+      api_key: apiKey,
+      uid: userId
+    }
+  );
 
-    const fetchData : Promise<PullFromDbReturnData<ScrapeInfoSave>> = await fetch(getSavedScrapesUrl, {
-      method: 'GET',
-    })
-    .then(response => {
-        if(!response.ok){console.log("Fetch to pull saved scrapes failed."); return response.status;};
+  const res: Response = await fetch(generateKeyUrl, {
+    method: 'POST',
+  });
 
-        return response.json();
-    });
-
-    return fetchData;
+  return await handleReturnData<GenerateApiKeyReturn>({res: res});
 };
 
-export const changePassword = async ({apiKey, userId, password} : {apiKey : string, userId : string, password : string}) : Promise<PutToDbReturnData> => {
+export const deleteUser = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<DeleteUserReturn> => {
 
-    const changePasswordUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/change_password?" + new URLSearchParams(
-      {
-        api_key: apiKey,
-      }
-    );
+  const deleteUserUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/delete_user?" + new URLSearchParams(
+    {
+      api_key: apiKey,
+      uid: userId
+    }
+  );
 
-    const fetchData : Promise<PutToDbReturnData> = await fetch(changePasswordUrl, {
-      method: 'PUT',
-      body: JSON.stringify({uid: userId, password: password}),
-    })
-    .then(response => {
-        if(!response.ok){console.log("Fetch to change password failed."); return response.status;};
+  const res: Response = await fetch(deleteUserUrl, {
+    method: 'DELETE',
+  });
 
-        return response.json();
-    });
-
-    return fetchData;
+  return await handleReturnData<DeleteUserReturn>({res: res});
 };
 
-export const generateApiKey = async ({apiKey, userId} : {apiKey : string, userId : string}) : Promise<PostToDbReturnData> => {
+export const CreateUser = async ({ apiKey, provider, email, password, alias, scheme, image }: { apiKey: string, provider: string, email: string, password?: string, alias?: string, scheme?: string, image?: string }): Promise<CreateUserReturn> => {
 
-    const generateKeyUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/user/generate_api_key?" + new URLSearchParams(
-      {
-        api_key: apiKey,
-      }
-    );
+  const createUserUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/create_user?" + new URLSearchParams(
+    {
+      api_key: apiKey,
+    }
+  );
 
-    const fetchData : Promise<PostToDbReturnData> = await fetch(generateKeyUrl, {
-      method: 'POST',
-      body: JSON.stringify({uid: userId}),
-    })
-    .then(response => {
-        if(!response.ok){console.log("Fetch to generate API-key failed."); return response.status;};
+  const payload: { provider: string, email: string, password?: string, alias?: string, scheme?: string, image?: string } = { provider: provider, email: email, scheme: scheme };
 
-        return response.json();
-    });
+  if (provider === "credentials") {
+    payload.password = password;
+    payload.alias = alias;
+  };
+  if (provider === "google") {
+    payload.image = image;
+  };
 
-    return fetchData;
+  const res: Response = await fetch(createUserUrl, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return await handleReturnData<CreateUserReturn>({res: res});
+};
+
+export const checkUserLoginValid = async ({ apiKey, email, password }: { apiKey: string, email: string, password: string }) : Promise<CheckUserValidReturn> => {
+
+  const checkUserUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/check_user_valid?" + new URLSearchParams(
+    {
+      api_key: apiKey,
+      ue: email,
+      up: password,
+    }
+  );
+
+  const res: Response = await fetch(checkUserUrl, {
+    method: 'GET',
+  });
+
+  return await handleReturnData<CheckUserValidReturn>({res: res});
 };
 

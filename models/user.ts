@@ -8,6 +8,12 @@ const UserSchema = new Schema({
         required: [true, 'Email is required'],
 
     },
+    phash: {
+        type: String
+    },
+    salt: {
+        type: String
+    },
     alias: {
         type: String,
     },
@@ -20,7 +26,7 @@ const UserSchema = new Schema({
     description: {
         type: String,
     },
-    all_saved_scrapes : {
+    all_saved_scrapers : {
         type: Array,
     },
     api: {

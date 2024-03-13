@@ -2,8 +2,10 @@
 const ErrorComponent = ({errorCodes, errorPath} : {errorCodes : object, errorPath : string}) => {
 
   const errorTranslator = {
-    "AUTH" : "Authorization",
-    "DB" : "Database",
+    AUTH : "Authorization",
+    DB : "Database",
+    SCRAPE: "Scraping",
+    SERVER: "Server"
   }
 
   return (

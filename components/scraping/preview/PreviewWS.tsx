@@ -2,66 +2,22 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { createAlert, isElementVisible, handleWindowClose, returnInputElementChecked } from "@utils/generalFunctions";
-import { PreviewData } from "@custom-types";
+import { ScraperInfos } from "@custom-types";
 import PreviewWorkflowElement from "./PreviewWorkflowType";
 import PreviewWorkflowAction from "./PreviewWorkflowAction";
+import { isElementVisible } from "@utils/elementFunction";
+import { showHideElement, rotateElement } from "@utils/elementFunction";
 
-const WSForm =  ({previewData} : {previewData: PreviewData}) => {
+const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
 
-  const [ update, setUpdate ] = useState(2);
-
-  const rerenderPage = () : void => {
-    setUpdate((prevUpdate) => { return (prevUpdate +1) % 2; });
-    return;
-  };
-    
-  /** Shows or hides html elements depending on their display value.
-   * PARAMS:
-   * elementId (String): Id of the html to operate on
-   */
-  const showHideElement = ({elementId} : {elementId : string}) : void => {
-
-    let elementClassList = window.document.getElementById(elementId)?.classList;
-                        
-    if (elementClassList.contains("hidden")){
-
-      elementClassList.remove("hidden")
-    }
-    else{
-
-      elementClassList.add("hidden")
-    }
-    
-    rerenderPage();
-
-    return;
-  };
-
-  /** Rotates a element by a specified number of degrees.!!! Could be abused if different degree numbers get entered again and again, so should add a check !!!
-   * PARAMS:
-   * - elementId (String): Id of the html to operate on
-   * - degreed (String): number of degrees to rotate by
-   */
-  const rotateElement = ({elementId, degrees} : {elementId : string, degrees : string}) : void => {
-
-    const possibleDegreeRotations = ["rotate-180, rotate-90, rotate-45, rotate-135, rotate-270, rotate-315"]
-    let classList = window.document.getElementById(elementId).classList;
-
-    if(classList.contains(`rotate-${degrees}`)){ classList.remove(`rotate-${degrees}`); }
-    else{ classList.add(`rotate-${degrees}`); }
-
-    return;
-  };
+  const amountScrapes = previewData.all.length
 
   return (
     <div id={"PREVIEW-wsform-all-scrapes-container"} className="flex flex-col items-center justify-start gap-y-6 p-5 mt-5 min-w-[620px] h-full max-h-[100dvh] mx-[1%] overflow-auto" >
       {   
-        Array.from(Array(previewData.amount).keys()).map((index) => {
+        Array.from(Array(amountScrapes).keys()).map((index) => {
 
-          if(previewData?.data.scrape_object.all[index] === undefined){
-            return(<></>)
-          }
+          if(!previewData?.all[index]){ return; };
 
           return(
             <section key={`PREVIEW-scrape-${index}`} id={`PREVIEW-scrape-${index}`} className='gap-y-2 flex flex-col items-center h-min justify-between rounded-xl w-min border-[3px] bg-header-light-bg dark:bg-header-dark-bg border-purple-500 dark:border-purple-300 shadow-[0px_0px_10px_#000000] dark:shadow-[0px_0px_10px_#FFFFFF] ' > 
@@ -119,7 +75,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                       <input readOnly type="text"
                         required 
                         placeholder="https://example.com"
-                        value={previewData?.data.scrape_object.all?.[index].global_params.website_url}
+                        value={previewData.all[index].global_params.website_url}
                         id={`url-param-${index}`} 
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                       />
@@ -140,7 +96,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                         required 
                         placeholder="Browser"
-                        value={previewData?.data.scrape_object.all?.[index].global_params.browser_type}
+                        value={previewData.all[index].global_params.browser_type}
                         id={`browser-param-${index}`}
                       />
 
@@ -157,7 +113,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                         min={5}
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                         required 
-                        value={previewData?.data.scrape_object.all?.[index].global_params.wait_time}
+                        value={previewData.all[index].global_params.wait_time}
                         id={`wait-param-${index}`} 
                       />
 
@@ -197,7 +153,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                       </button>
 
                       {
-                        previewData?.data.scrape_object.all[index].loop.created === false ?
+                        previewData.all[index].loop.created === false ?
 
                           (
                             <button id={`create-loop-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" >
@@ -237,20 +193,20 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
 
                   <div id={`actions-container-${index}`} className="rows_grid w-auto h-auto gap-y-1 p-2 " >
                     {
-                      previewData?.data.scrape_object.all?.[index] !== undefined &&
+                      previewData.all[index] !== undefined &&
                         (
                           <>
                             { 
-                              Object.keys(previewData?.data.scrape_object.all?.[index].workflow).map((rowIndex) => {
+                              Array.from(previewData.all[index].workflow.keys()).map((rowIndex) => {
 
                                 return (
                                   <div id={`action-${rowIndex}`} className="relative flex flex-row items-center justify-start pr-2 " key={`workflow-action-${rowIndex}`} >
 
-                                    <h4 id={`action-heading-${rowIndex}`} className="text-start text-[14px] font-[Helvetica] font-[600] object-contain max-h-[40px] min-w-[80px] max-w-[80px] break-words pr-2" > {`${(Number(rowIndex) + 1)}: ${(previewData?.data.scrape_object.all?.[index].workflow[rowIndex][0].at(0).toUpperCase() + previewData?.data.scrape_object.all?.[index].workflow[rowIndex][0].slice(1))}`} </h4>
+                                    <h4 id={`action-heading-${rowIndex}`} className="text-start text-[14px] font-[Helvetica] font-[600] object-contain max-h-[40px] min-w-[80px] max-w-[80px] break-words pr-2" > {`${(Number(rowIndex) + 1)}: ${(previewData.all[index].workflow[rowIndex].type.at(0).toUpperCase() + previewData.all[index].workflow[rowIndex].type.slice(1))}`} </h4>
 
                                     <PreviewWorkflowAction
-                                      scraperInfos={previewData?.data.scrape_object}
-                                      type={previewData?.data.scrape_object.all?.[index].workflow[rowIndex][0]}
+                                      scraperInfos={previewData}
+                                      type={previewData.all[index].workflow[rowIndex][0]}
                                       scrapeIdx={index} 
                                       rowIndex={Number(rowIndex)}  />
                                   </div>
@@ -281,7 +237,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                           type="number"
                           min={1}
                           id={`loop-start-index-${index}`}
-                          value={previewData?.data.scrape_object.all[index].loop.loop_start_end[0]}
+                          value={previewData.all[index].loop.start}
                           className={"w-full rounded-lg border-2 border-gray-600 dark:border-gray-300 text-[18px] px-1 justify-center h-10 bg-gray-300 dark:bg-gray-600 font-[700]"}
                         />
 
@@ -295,7 +251,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                           type="number"
                           min={1}
                           id={`loop-end-index-${index}`}
-                          value={previewData?.data.scrape_object.all[index].loop.loop_start_end[1]}
+                          value={previewData.all[index].loop.end}
                           className={"w-full rounded-lg border-2 border-gray-600 dark:border-gray-300 text-[18px] px-1 justify-center h-10 bg-gray-300 dark:bg-gray-600 font-[700]"}
                         />
 
@@ -311,7 +267,7 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                           max={10}
                           id={`loop-iterations-${index}`}
                           className={"w-full rounded-lg border-2 border-gray-600 dark:border-gray-300 text-[18px] px-1 justify-center h-10 bg-gray-300 dark:bg-gray-600 font-[700]"}
-                          value={previewData?.data.scrape_object.all[index].loop.iterations}
+                          value={previewData.all[index].loop.iterations}
                         />
 
                       </div>
@@ -334,13 +290,13 @@ const WSForm =  ({previewData} : {previewData: PreviewData}) => {
                   <div id={`workflow-content-wrapper-${index}`} className="workflow_grid" >
 
                     {
-                      [...Object.keys(previewData?.data.scrape_object.all[index].workflow)].map((workflowIndex) => {
+                      Array.from(previewData.all[index].workflow.keys()).map((workflowIndex) => {
 
                         return (
 
                             <PreviewWorkflowElement
                               key={workflowIndex} 
-                              scraperInfos={previewData?.data.scrape_object} 
+                              scraperInfos={previewData} 
                               scrapeIdx={index} 
                               workflowIndex={Number(workflowIndex)}
                             />

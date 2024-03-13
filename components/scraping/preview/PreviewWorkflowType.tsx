@@ -13,7 +13,7 @@ const PreviewWorkflowAction = ({scraperInfos, scrapeIdx, workflowIndex } : {scra
 
       {
         /**  == for string to int  */
-        scraperInfos.all[scrapeIdx].loop.created && workflowIndex == Number(scraperInfos.all[scrapeIdx].loop.loop_start_end.at(0)) - 1 &&
+        scraperInfos.all[scrapeIdx].loop.created && workflowIndex == Number(scraperInfos.all[scrapeIdx].loop.start) - 1 &&
           (
             <>
               <div className="bg-black w-[3px] h-full max-h-[188px] " />
@@ -54,10 +54,10 @@ const PreviewWorkflowAction = ({scraperInfos, scrapeIdx, workflowIndex } : {scra
           </p>
 
           { 
-            [...Object.keys(scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1))].map((key) => {
+            Array(scraperInfos.all[scrapeIdx].workflow[workflowIndex].data).map((key) => {
 
               return (
-                scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key] !== undefined &&
+                scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key] !== undefined &&
                     (
                       <Fragment key={`data-point-${workflowIndex}-${key}`} >
                         {
@@ -68,13 +68,13 @@ const PreviewWorkflowAction = ({scraperInfos, scrapeIdx, workflowIndex } : {scra
                                   {`${key}: `} 
                                   <span className={"font-[600]"} > 
                                     {
-                                      scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key].length > 11 ?
+                                      scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key].length > 11 ?
                                         (
-                                          scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key].slice(0, 8) + "..." 
+                                          scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key].slice(0, 8) + "..." 
                                         )
                                         :
                                         (
-                                          scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key]
+                                          scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key]
                                         )
                                     }
                                   </span>
@@ -89,13 +89,13 @@ const PreviewWorkflowAction = ({scraperInfos, scrapeIdx, workflowIndex } : {scra
                                 </p>
                                 <p className="font-[600] min-h-[25px] " >
                                   {
-                                    scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key].length > 12 ?
+                                    scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key].length > 12 ?
                                       (
-                                        scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key].slice(0, 9) + "..."
+                                        scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key].slice(0, 9) + "..."
                                       )
                                       :
                                       (
-                                        scraperInfos.all[scrapeIdx].workflow[workflowIndex].at(1)[key]
+                                        scraperInfos.all[scrapeIdx].workflow[workflowIndex].data[key]
                                       )
                                   }
                                 </p>
@@ -113,7 +113,7 @@ const PreviewWorkflowAction = ({scraperInfos, scrapeIdx, workflowIndex } : {scra
 
       {
         /**  == for string to int  */
-        scraperInfos.all[scrapeIdx].loop.created && workflowIndex == Number(scraperInfos.all[scrapeIdx].loop.loop_start_end.at(1)) - 1 &&
+        scraperInfos.all[scrapeIdx].loop.created && workflowIndex == Number(scraperInfos.all[scrapeIdx].loop.end) - 1 &&
         (
           <>
             <p className="w-3 break-words text-[14px] font-[600] max-h-[188px] " >

@@ -1,58 +1,73 @@
 "use client";
 
-import { signIn, signOut, useSession, getProviders} from "next-auth/react";
+import { useSession, getProviders} from "next-auth/react";
 import { useState, useEffect } from "react";
-import { redirect } from "next/navigation";
+import SignUp from "@components/user/SignUp";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { PacmanLoader } from "react-spinners";
 
 const SignUpPage = () => {
 
-  const { data: theSession } = useSession();
-  const [ providers, setProviders ] : [any, any] = useState(null);
-  var initialRender = true;
+  const { data: theSession, status: AuthStatus } = useSession();
+  const [ providers, setProviders ] = useState(null);
 
-  const firstProviderSetup = async () => {
+  const { push } = useRouter();
+
+  const providerSetup = async () => {
 
     const providers = await getProviders();
-
     setProviders(providers);
-
     return;
   };
 
 	useEffect(() => {
-
-    if(initialRender){
-      firstProviderSetup();
-      initialRender = false;
-    };
-
+    providerSetup();
 	}, []);
 
-  return (
-    <>
-      {
-        theSession?.user ? 
-          (
-            <>
-              <h1> Already logged in. Redirecting... </h1>
-              {redirect("/")}
-            </>
-          ) 
-          : 
-          (
-            providers && Object.values(providers).map((provider : any) => (
+  useEffect(() => {
+    if(AuthStatus === "authenticated"){
+      push("/");
+    };
+    return;
+  }, [AuthStatus]);
 
-              <button  className="purple_btn"
-                type='button'
-                key={provider.name}
-                onClick={() => { signIn(provider.id); }}
-              >
-              {`Sign up/in (${provider.name})`}
-              </button>
-            ))
-          )
+  return (
+    <section id="sign-up/in-section" className="flex flex-col lg:flex-row w-full h-[80dvh] items-center" >
+
+      <div id="logo-container" className="flex flex-col items-center gap-y-4 w-[50%] h-full border-r-2 border-gray-400" >
+        <Image
+          src={"/assets/icons/logo/yows_logo_1.svg"}
+          alt="Yows logo"
+          id="sign-up/in-logo"
+          width={500}
+          height={500}
+          className=""
+        />
+
+        <h2 id="sign-up/in-logo-heading" className="text-[26px] font-inter font-[600]" >YOWS - Your Own Web Scraper</h2>
+
+        <p id="sign-up/in-logo-description" className="text-[18px] font-[400] px-2 pl-6 text-start" >
+          By signing in you will get access to lots of features, like saving scrapers, managing data, interacting with the API and so on. <br />
+          You can sign in through Google, but if you want to subscribe to any paid features(coming soon) you will need to create your own YOWS account. <br />
+          There will be no spam/ad emails sent to your email address and you can delete your account at any time.
+        </p>
+      </div>
+
+      {
+        AuthStatus === "unauthenticated" ? 
+        (
+          <SignUp AuthStatus={AuthStatus} providers={providers} push={push} />
+        )
+        :
+        (
+          <div id="auth-loading-wrapper" className="w-[50%] h-full flex flex-col items-center justify-center" >
+            <PacmanLoader size={50} speedMultiplier={2} color="#9D40BE" />
+          </div>
+        )
       }
-    </>
+      
+    </section>
   );
 };
 

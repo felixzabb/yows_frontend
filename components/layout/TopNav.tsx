@@ -114,10 +114,43 @@ const TopNav = () => {
 					)
 					:
 					(
-						authStatus !== "loading" &&
-							<Link id="signup-link" href='/signup' className="text-[20px] font-[Helvetica] font-[500] px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
-								Sign up/in
-							</Link>
+						authStatus !== "loading" && (
+							<div id="signed-out-options-container" className="flex flex-row gap-x-4 items-end justify-center h-full" >
+								<Link id="signup-link" href='/signup' className="text-[20px] font-[Helvetica] font-[500] w-auto px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
+									Sign up/in
+								</Link>
+
+								{
+									colorMode === "dark" ?
+										(
+											<Image
+												id="color-mode-toggle"
+												src="/assets/icons/colorMode/dark_mode_moon.svg"
+												alt="Color mode switch"
+												width={34}
+												height={34}
+												className=" cursor-pointer mb-[3px]"
+												onClick={switchColorMode}
+											
+											/>
+										)
+										:
+										(
+											<Image
+												id="color-mode-toggle"
+												src="/assets/icons/colorMode/light_mode_sun.svg"
+												alt="Color mode switch"
+												width={34}
+												height={34}
+												className=" cursor-pointer mb-[3px]"
+												onClick={switchColorMode}
+											
+											/>
+										)
+								}
+							</div>
+							
+						)	
 					)
 				}
 		</nav>

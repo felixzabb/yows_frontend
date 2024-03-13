@@ -13,7 +13,7 @@ const SavedScrapesPage = () => {
   return (
     <>
       {
-        theSession?.user !== undefined ? 
+        AuthStatus !== "loading" ? 
           (
             <SavedScrapes User={theSession?.user} AuthStatus={AuthStatus}/>
           ) 

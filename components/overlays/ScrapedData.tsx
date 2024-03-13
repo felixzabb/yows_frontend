@@ -1,27 +1,16 @@
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment} from 'react';
 import Image from 'next/image'; 
 import { putToDb } from '@utils/api_funcs';
-import { rotateElement, showHideElement } from '@utils/generalFunctions';
-import { ClockLoader } from "react-spinners";
-import { useContext } from 'react';
-import { appContext } from '@app/layout';
 import Tooltip from '@components/design/Tooltip';
-import { ScraperInfoResults } from '@custom-types';
+import { ScrapedData } from '@custom-types';
+import { rotateElement, showHideElement } from '@utils/elementFunction';
+import { useRouter } from 'next/navigation';
 
-const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, currentScrapeIndex, updateSavedData } : 
-                        { expectedWaitTime? : number, saveAbility : boolean, currentScrapeId? : string, currentScrapeIndex? : number, updateSavedData? : ({scrapedData, getIdx } : {scrapedData : ScraperInfoResults, getIdx : number}) => void } ) => {
+const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, updateSavedData, scrapedData } : 
+                        {saveAbility : boolean, currentScrapeId? : string, currentScrapeIndex? : number, updateSavedData? : ({scrapedData, getIdx } : {scrapedData : ScrapedData, getIdx : number}) => void, scrapedData: ScrapedData } ) => {
 
-  const context = useContext(appContext);
-
-  const emptyResults : ScraperInfoResults = {
-    empty: true,
-    0 : {
-      scrape_runs : {0 : []}
-    }
-  };
-
-  const [scrapedData, setScrapedData] = useState<ScraperInfoResults>(emptyResults);
+  const { push } = useRouter();
 
   const saveResults = async () : Promise<void> => {
 
@@ -33,7 +22,12 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
 
     const putData = {filter : {_id: currentScrapeId}, update : {"$set" : {"results" : scrapedData}}}
 
-    await putToDb({apiKey: "felix12m", dbName: "test_runs", collectionName: "scrape_info_saves", data: putData});
+    const saveOperation = await putToDb({apiKey: "felix12m", dbName: "test_runs", collectionName: "scrape_info_saves", data: putData});
+
+    if(!saveOperation.acknowledged){
+      push(`?app_error=${saveOperation.errors[0]}&e_while=saving%20results`);
+      return;
+    };
     
     updateSavedData({scrapedData: scrapedData, getIdx: currentScrapeIndex});
     
@@ -54,22 +48,7 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
     downloadAnchor.remove();
   
     return;
-  };
-
-  useEffect(() => {
-    setScrapedData(context.appContextData.overlayChildData.results)
-  }, [context])
-
-  if(scrapedData === undefined || scrapedData === null){return(<></>); }
-
-  if(scrapedData.empty){
-    return(
-      <>
-        <ClockLoader size={200} speedMultiplier={2} />
-        <h3>{expectedWaitTime}</h3>
-      </>
-    );
-  };
+  }; 
 
   return (
     <div id="scrape-results-wrapper" className='min-w-[1090px] max-w-[1090px] h-auto flex flex-col items-center justify-start max-h-[70dvh] overflow-y-scroll pr-[10px]' >
@@ -145,38 +124,36 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
       </aside>
 
         {
-          [...Object.keys(scrapedData)].map((resultIndex) => {
-
-            if(resultIndex === "empty"){return;}
+          scrapedData && Array.from(scrapedData.keys()).map((scrapeIndex) => {
             
             return (
 
-              <section key={`scrape-wrapper-${resultIndex}`} id={`scrape-wrapper-${resultIndex}`} className=" flex flex-col items-center min-w-full max-w-full h-auto mt-2 p-3 border-[2px] border-black rounded-md" >
+              <section key={`scrape-wrapper-${scrapeIndex}`} id={`scrape-wrapper-${scrapeIndex}`} className=" flex flex-col items-center min-w-full max-w-full h-auto mt-2 p-3 border-[2px] border-black rounded-md" >
 
-                <aside id={`scrape-options-and-meta-${resultIndex}`} className="c_row_elm justify-between w-full gap-x-5 px-2 rounded-md border-1 border-[black] min-h-[50px] " >
+                <aside id={`scrape-options-and-meta-${scrapeIndex}`} className="c_row_elm justify-between w-full gap-x-5 px-2 rounded-md border-1 border-[black] min-h-[50px] " >
 
-                  <div id={`scrape-meta-${resultIndex}`} className='flex flex-row items-center gap-x-4 justify-start' >
-                    <h3 id={`scrape-index-${resultIndex}`} className="text-[18px] font-[600]" > {`Scrape: ${Number(resultIndex) + 1} `}</h3>
-                    <h3 id={`amount-scrape-runs-${resultIndex}`} className="text-[18px] font-[600]" > {`Runs: ${Object.keys(scrapedData[resultIndex].scrape_runs).length} `}</h3>
-                    <h3 className="text-[18px] font-[600]" > {`Scrape ${Number(resultIndex) + 1}: `}</h3>
+                  <div id={`scrape-meta-${scrapeIndex}`} className='flex flex-row items-center gap-x-4 justify-start' >
+                    <h3 id={`scrape-index-${scrapeIndex}`} className="text-[18px] font-[600]" > {`Scrape: ${Number(scrapeIndex) + 1} `}</h3>
+                    <h3 id={`amount-scrape-runs-${scrapeIndex}`} className="text-[18px] font-[600]" > {`Runs: ${scrapedData[scrapeIndex].scrape_runs.length} `}</h3>
+                    <h3 className="text-[18px] font-[600]" > {`Scrape ${Number(scrapeIndex) + 1}: `}</h3>
                   </div>
 
-                  <div id={`scrape-meta-options-${resultIndex}`} className='flex flex-row items-center gap-x-4 justify-start'>
+                  <div id={`scrape-meta-options-${scrapeIndex}`} className=' flex flex-row items-center gap-x-4 justify-start'>
 
                     <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
-                      <div className="h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip yOrientation='top' content={"Copy current scrape"} /> 
+                      <div className=" h-auto w-auto hidden group-hover:flex " >
+                        <Tooltip xOrientation='left' yOrientation='top' content={"Copy current scrape"} /> 
                       </div>
 
                       <Image
                         src={"/assets/icons/generic/copy.svg"}
-                        id={`copy-as-json-${resultIndex}`}
+                        id={`copy-as-json-${scrapeIndex}`}
                         width={36}
                         height={36}
                         alt={"Copy scraped data"}
                         className="cursor-pointer" 
-                        onClick={() => { navigator.clipboard.writeText( JSON.stringify(scrapedData[resultIndex])); }} 
+                        onClick={() => { navigator.clipboard.writeText( JSON.stringify(scrapedData[scrapeIndex])); }} 
                       />
 
                     </div>
@@ -189,17 +166,17 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
 
                       <Image
                         src={"/assets/icons/scrape/download.svg"}
-                        id={`download-as-json-${resultIndex}`}
+                        id={`download-as-json-${scrapeIndex}`}
                         width={36}
                         height={36}
                         alt={"Download scraped data"}
                         className="cursor-pointer" 
-                        onClick={() => { createDownload({all: false, resIdx: Number(resultIndex)}); }} 
+                        onClick={() => { createDownload({all: false, resIdx: Number(scrapeIndex)}); }} 
                       />
 
                     </div>
 
-                    <hr id={`scraped-data-options-separator-${resultIndex}`} className="h-[40px] w-[2px] bg-gray-400 " />
+                    <hr id={`scraped-data-options-separator-${scrapeIndex}`} className="h-[40px] w-[2px] bg-gray-400 " />
 
                     <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
@@ -208,12 +185,12 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
                       </div>
 
                       <Image 
-                        id={`toggle-dd-btn-${resultIndex}`} 
+                        id={`toggle-dd-btn-${scrapeIndex}`} 
                         className="overlay_toggle_dd_btn cursor-pointer " 
                         width={40} height={40} 
                         src="/assets/icons/generic/updownarrow.svg"
                         alt={"dropwdown image"}
-                        onClick={() => { showHideElement({elementId: `main-scraped-data-list-${resultIndex}`}); showHideElement({elementId: `meta-data-separator-${resultIndex}`}); rotateElement({elementId : `toggle-dd-btn-${resultIndex}`, degrees : "180"}); }}
+                        onClick={() => { showHideElement({elementId: `main-scraped-data-list-${scrapeIndex}`}); showHideElement({elementId: `meta-data-separator-${scrapeIndex}`}); rotateElement({elementId : `toggle-dd-btn-${scrapeIndex}`, degrees : "180"}); }}
                       />
 
                     </div>
@@ -222,12 +199,12 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
 
                 </aside>
 
-                <hr id={`meta-data-separator-${resultIndex}`} className='hidden border-[1px] h-[1px] mt-1 border-black dark:border-white w-full rounded-3xl opacity-20' />
+                <hr id={`meta-data-separator-${scrapeIndex}`} className='hidden border-[1px] h-[1px] mt-1 border-black dark:border-white w-full rounded-3xl opacity-20' />
 
-                <ul id={`main-scraped-data-list-${resultIndex}`} className='w-full h-auto px-3 hidden flex flex-col items-center gap-y-1' >
+                <ul id={`main-scraped-data-list-${scrapeIndex}`} className='w-full h-auto px-3 hidden flex flex-col items-center gap-y-1' >
                   {
 
-                    [...Object.keys(scrapedData[resultIndex].scrape_runs )].map((scrapeIndex) => {
+                    Array.from(scrapedData?.[scrapeIndex].scrape_runs.keys()).map((scrapeIndex) => {
 
                       return (
                         <li key={`data-scrape-wrapper-${scrapeIndex}`} id={`data-scrape-wrapper-${scrapeIndex}`} className='h-auto w-full flex flex-col items-center' >
@@ -236,7 +213,7 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
                             <h3 id={`run-index-descriptor-${scrapeIndex}`} className='text-[18px] font-[600] my-3 '  > {`RUN ${Number(scrapeIndex) + 1 }`} </h3>
 
                             {
-                              [...Object.keys( scrapedData[resultIndex].scrape_runs[scrapeIndex] )].map((dataPoint) => {
+                              Array.from(scrapedData?.[scrapeIndex].scrape_runs[scrapeIndex].keys()).map((dataPoint) => {
 
                                 return(
                                   <Fragment key={`fr-${dataPoint}`}>
@@ -246,7 +223,7 @@ const ScrapedDataOverlay = ({ expectedWaitTime, saveAbility, currentScrapeId, cu
                                       </h4>
                                       
                                       <h4 id={`data-point-${dataPoint}`} className='w-full text-start' >
-                                        {scrapedData[resultIndex].scrape_runs[scrapeIndex][dataPoint]}
+                                        {scrapedData[scrapeIndex].scrape_runs[scrapeIndex][dataPoint]}
                                       </h4>
                                     </li>
                                     <hr className="w-[100%] border-black border-1 " />

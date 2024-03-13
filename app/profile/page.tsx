@@ -12,7 +12,7 @@ const ProfilePage = () => {
   return (
     <>
       {
-        theSession?.user !== undefined ? 
+        AuthStatus !== "loading" ? 
           ( 
             <Profile User={theSession?.user} AuthStatus={AuthStatus} />            
           ) 

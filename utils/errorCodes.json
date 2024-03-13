@@ -1,16 +1,67 @@
 {
+  "SERVER" : {
+    "FUNCTION" : {
+      "1" : {
+        "type" : "server-side",
+        "tags" : ["server-side", "server-status"],
+        "desc" : "The server seems to be offline or have a problem. (INTERNAL SERVER ERROR)",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!",
+        "message" : "The server is not available right now, please try again later."
+      }
+    }
+  },
   "AUTH" : {
     "REQ" : {
       "1" : {
+        "type" : "client-side",
         "tags" : ["client-side", "authentication"],
         "desc" : "Credentials provided in the request are invalid.",
         "possibleFix" : "Check all keys/ids in your request for validity. Check your request URL."
+      }
+    },
+    "CREATE" : {
+      "1" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "authentication", "API"],
+        "desc" : "You already have 3 API-keys, you can not have more!",
+        "possibleFix" : "None, please use your 3 API-KEYS."
+      }
+    },
+    "SIGNIN" : {
+      "1" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "authentication"],
+        "desc" : "A user with the provided email couldn't be found.",
+        "possibleFix" : "Check your provided email or create a YOWS account.",
+        "message" : "A user with the provided email couldn't be found."
+      },
+      "2" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "authentication"],
+        "desc" : "A user with the provided email was found but the provided password was invalid.",
+        "possibleFix" : "Check your provided password",
+        "message" : "A user with the provided email was found but the provided password was invalid."
+      },
+      "3" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "authentication"],
+        "desc" : "A YOWS account with your Oauth email already exists.",
+        "possibleFix" : " Use a different Oauth account or sign in to your YOWS account.",
+        "message" : "A YOWS account with your Oauth email already exists."
+      },
+      "4" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "authentication"],
+        "desc" : "A YOWS account with your the provided email already exists.",
+        "possibleFix" : " Use a different email or sign in to your YOWS account.",
+        "message" : "A YOWS account with the provided email already exists. Try signing in!"
       }
     }
   },
   "DB" : {
     "CONN" : {
       "1" : {
+        "type" : "server-side",
         "tags" : ["server-side", "database"],
         "desc" : "Failed to connect to db (server-side).",
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
@@ -18,6 +69,20 @@
     },
     "POST" : {
       "1" : {
+        "type" : "server-side",
+        "tags" : ["server-side", "database"],
+        "desc" : "Unknown error when inserting many documents into DB.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      },
+      "2" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "database", "authentication"],
+        "desc" : "Duplicate key error, when posting to db. A user provided credential was duplicate.",
+        "possibleFix" : "Check if you already have an account or subscription.",
+        "message" : "The provided email already exists, please sign in or use another email."
+      },
+      "3" : {
+        "type" : "server-side",
         "tags" : ["server-side", "database"],
         "desc" : "Unknown error when inserting many documents into DB.",
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
@@ -25,6 +90,7 @@
     },
     "PUT" : {
       "1" : {
+        "type" : "server-side",
         "tags" : ["server-side", "database"],
         "desc" : "Unknown error when updating many documents in DB.",
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
@@ -32,6 +98,7 @@
     },
     "DEL" : {
       "1" : {
+        "type" : "server-side",
         "tags" : ["server-side", "database"],
         "desc" : "Unknown error when deleting from DB.",
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
@@ -41,6 +108,7 @@
   "SCRAPE" : {
     "REQ" : {
       "1" : {
+        "type" : "client-side",
         "tags" : ["client-side", "bad-request"],
         "desc" : "You had more than 10 scrapes in your scraper. 10 is the maximum.",
         "possibleFix" : "Have a maximum of 10 scrapes in your scraper."

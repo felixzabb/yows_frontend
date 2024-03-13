@@ -2,67 +2,62 @@ import { useEffect, useState, useContext } from "react";
 import { pullFromDb, putToDb } from "@utils/api_funcs";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ProfileData } from "@custom-types";
+import { UserProfileData } from "@custom-types";
 import GeneralProfileSettings from "./GeneralProfileSettings";
 import SubscriptionProfileSettings from "./SubscriptionProfileSettings";
 import ApiProfileSettings from "./ApiProfileSettings";
-import { showHideElement } from "@utils/generalFunctions";
 import { ScaleLoader } from "react-spinners";
+import { showHideElement } from "@utils/elementFunction";
+import { showOverlay } from "@utils/generalFunctions";
+import { appContext } from "@app/layout";
+import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
 
 const Profile = ({ User, AuthStatus }) => {
 
   const urlQueryParams = useSearchParams();
-
-  const [ userData, setUserData ] = useState<ProfileData | null>(null); 
-
-  const [ update, setUpdate ] = useState(1); 
-
+  const context = useContext(appContext);
   const { push } = useRouter();
 
-  const rerenderPage = () : void => {
-    setUpdate((prevUpdate) => { return (prevUpdate +1) % 2; });
-    return;
-  };
+  const [ userData, setUserData ] = useState<UserProfileData | null>(null); 
 
   const goToProfileSection = ({sectionType} : {sectionType : string}) => {
-
-    push(`?section=${sectionType}`)
+    push(`?section=${sectionType}`);
   };
 
   const getProfileData = async () : Promise<void> => {
 
-    const pullData = {filter : {_id : User.id}, projection: {"__v": 0, "all_saved_scrapes": 0,  "image" : 0}};
+    const pullData = {filter : {_id : User.id}, projection: {"__v": 0, "saved_scrapers": 0}};
+    const pullOperation = await pullFromDb<UserProfileData>({apiKey: "felix12m", dbName: "yows_users", collectionName: "users", data: pullData});
 
-    const pull_operation = await pullFromDb({apiKey: "felix12m", dbName: "yows_users", collectionName: "users", data: pullData})
+    if(!pullOperation.acknowledged){
+      push(`?app_error=${pullOperation.errors[0]}&e_while=loading%20profile`);
+      return;
+    };
 
-    setUserData(pull_operation.found.at(0));
-    console.log(pull_operation.found.at(0));
-    rerenderPage();
+    setUserData(pullOperation.found.at(0));
     return;
   };
 
-  const saveSpecificChange = async ({setting, newValue, nested, nestedPath} : {setting : string, newValue : string, nested? : boolean, nestedPath? : string[]}) => {
+  const saveSpecificChange = async ({setting, newValue} : {setting : string, newValue : string}) => {
 
-    let setObject = {};
-    setObject[setting] = newValue;
+    const setObject = {[setting] : newValue};
 
-    await putToDb({apiKey: "felix12m" , dbName: "yows_users", collectionName: "users", data: {filter: {_id: User.id}, update: {"$set" : setObject}}});
+    const saveOperation = await putToDb({apiKey: "felix12m" , dbName: "yows_users", collectionName: "users", data: {filter: {_id: User.id}, update: {"$set" : setObject}}});
+
+    if(!saveOperation.acknowledged){
+      push(`?app_error=${saveOperation.errors[0]}&e_while=saving%20change(s)`);
+      return;
+    };
 
     //positive change revalidation on reload
-    setUserData((prevUserData) => {
-      if(nested !== undefined && nested){
-        prevUserData[nestedPath.at(0)][nestedPath.at(1)] = newValue;
-      }
-      else{
-        prevUserData[setting] = newValue;
-      }
-      return prevUserData;
-    });
-    rerenderPage();
+    setUserData((prevUserData) => ({
+      ...prevUserData,
+      [setting]: newValue,
+    }));
     return;
   };
 
-  const addBgClue = ({elementId} : {elementId : string}) => {
+  const addSectionClue = ({elementId} : {elementId : string}) => {
     const possibleClasses = ["dark:bg-zinc-800", "bg-gray-300",];
     for(const i of ["general", "subscription", "api"]){
       const element = window.document.getElementById(`profile-sideNav-${i}`);
@@ -79,9 +74,13 @@ const Profile = ({ User, AuthStatus }) => {
   useEffect(() => {
     if(window.visualViewport.width < 1100){ window.document.getElementById("profile-sideNav").classList.add("hidden"); };
 
-    if(urlQueryParams.get("section") === null){ push("?section=general"); };
+    if(AuthStatus === "unauthenticated"){
+      console.log("here")
+      showOverlay({context: context, element: <NotSignedInDialog message="You can't access/have a profile. Please create an account or sign in!" />, title: "Not signed in!"});
+      return;
+    };
 
-    if(profileInitialFetch){
+    if(AuthStatus === "authenticated" && profileInitialFetch){
       getProfileData();
       profileInitialFetch = false;
     };
@@ -89,13 +88,26 @@ const Profile = ({ User, AuthStatus }) => {
   }, []);
 
   useEffect(() => {
-    addBgClue({elementId : `profile-sideNav-${urlQueryParams.get("section")}`});
+
+    if(!urlQueryParams.has("section")){ 
+      if(urlQueryParams.size === 0){ push("?section=general"); }
+      else{ push(`?${urlQueryParams}&section=general`); };
+    }
+    else{
+      if(!["api", "general", "subscription"].includes(urlQueryParams.get("section"))){
+        push("?section=general");
+      }
+      else{
+        addSectionClue({elementId : `profile-sideNav-${urlQueryParams.get("section")}`}); 
+      }
+    }
+    
   }, [urlQueryParams])
 
   return (
     <div id="profile-container" className="relative flex flex-row flex-grow items-start justify-start w-full min-h-[100dvh] max-h-[100dvh]" >
 
-      <section id="profile-sideNav" className="flex flex-col gap-y-4 items-start min-w-[350px] max-w-[350px] h-full overflow-auto bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg p-4 " >
+      <section id="profile-sideNav" className="flex flex-col gap-y-4 items-start min-w-[350px] max-w-[350px] h-[100dvh] overflow-auto bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg p-4 " >
         <h2 id="profile-sideNav-heading" className="font-inter font-[500] h-auto w-auto text-[20px] mb-4" >Account settings</h2>
 
         <button id="profile-sideNav-general" onClick={() => {goToProfileSection({sectionType: "general"})}}
@@ -118,13 +130,13 @@ const Profile = ({ User, AuthStatus }) => {
       <hr id="profile-sideNav-separator" className="w-[2px] h-[100dvh] bg-gray-400 " /> 
 
       {
-        Array.from(urlQueryParams.keys()).map((key) => {
+        AuthStatus === "authenticated" && Array.from(urlQueryParams.keys()).map((key) => {
 
           const value = urlQueryParams.get(key)
 
           if(userData === null){
             return(
-              <ScaleLoader key={key} height={50} width={4} margin={3} speedMultiplier={2} color="#8A2BE2" className="absolute right-[calc(calc(100%-324px)*0.5)] top-5" />
+              <ScaleLoader key={key} height={50} width={4} margin={3} speedMultiplier={2} color="#8A2BE2" className="absolute right-[calc(100%*0.5)] top-5" />
             );
           };
 

@@ -1,164 +1,172 @@
-// FOundation types:
-
 import { SetStateAction } from "react";
 
-type BasicApiReturn = number | {
+type BasicApiReturn = {
   acknowledged : 0 | 1
   errors? : string[]
 };
-// Sub-types of ScraperInfos:
 
-type WorkflowObject = {
-  [index : number] : [string, any]
+// ScraperInfos
+
+type ScraperInfos = {
+  all : ScrapeData[]
+  args : ScraperArgs
 };
 
-type GlobalParamsObject = {
+type ScraperArgs = {
+  user_email : string
+  amount_scrapes_global : number
+  global_expected_runtime : number
+  global_undetected : boolean
+};
+
+type ScrapeData = {
+  workflow : WorkflowData[]
+  global_params : ScrapeParams
+  loop : LoopData
+};
+
+type WorkflowData = {
+  type: string
+  data: any
+};
+
+type ScrapeParams = {
   website_url : string
   wait_time : number
   browser_type : string
   amount_actions_local : number
 };
 
-type LoopObject = {
-  loop_start_end : [number, number]
+type LoopData = {
+  start : number
+  end : number
   iterations : number
   created : boolean
 };
 
-// All Sub-types compiled into one
-type ScrapeInfoObject = {
-  workflow : WorkflowObject
-  global_params : GlobalParamsObject
-  loop : LoopObject
-};
+type ScrapedData = [
+  {scrape_runs: string[][]}
+];
 
-// The complete type
-type ScraperInfos = {
-  all : {
-    [index : number] : ScrapeInfoObject
-  }
-  args : {
-    user_email : string
-    amount_scrapes_global : number
-    global_expected_runtime : number
-    global_undetected : boolean
-  }
-};
+// DB
 
-// Form results need to have
-type ScraperInfoResults = {
-  empty? : boolean
-  [index : number] : {
-    scrape_runs : {
-      [index : number] : any[]
-    }
-  }
-}
-
-// Returned document from collection: "scrape_info_saves"
-type ScrapeInfoSave = {
+type SavedScraper = {
   _id : string
   name : string
   description : string
-  runtime : string    // change to number
-  results : ScraperInfoResults
-  scrape_object : ScraperInfos
+  runtime : number
+  scraped_data : ScrapedData
+  scraper : ScraperInfos
+};
 
-}
-
-// ScraperInfos fetched in "Profile.tsx"
-type FetchedScraperInfos = {
-  acknowledged : "true" | "false"                  // change to boolean
-  found : ScrapeInfoSave[]  // change to always be an array
-  ids : string[]
-  max_scrapes : string // change to number
-  
-}
-
-// Returned object when fetching profiles in "Profile.tsx"
-type ProfileData = {
-  _id? : string
+type UserProfileData = UserApiData & UserSubscriptionData & {
+  _id : string
   email : string
-  username : string
   provider : string
+  alias : string
+  phash : string
+  salt : string
   image? : string
   description : string
-  api_options? : {
-    data_cleanup : boolean
-    multithreading : boolean
-    multiprocessing : boolean
-    max_scrapes : string
-  }
-  api_interaction? : {
-    api_keys : []
-    blocked : boolean
-    price_per_request : number | null
-    sub_runtime : Date | null
-    sub_id : string | null
-  }
-  all_saved_scrapes? : {scrape_object : string }[]
-  __v? : number
-
+  saved_scrapers : {scraper : string}[]
 }
 
-// Returns of api function
+type UserApiData = {
+  api_keys : string[]
+  rate_limit : number
+}
 
-type PostToDbReturnData = BasicApiReturn & {
+type UserSubscriptionData = {
+  subscribed : 0 | 1
+  tier : 0 | 1 | 2 | 3
+  scraper_storage : number
+  max_scraper_runtime_seconds : number
+  max_loop_iterations : number
+  subscription_end : string
+  subscribed_months : 0
+}
+
+// API calls
+
+type PostToDbReturn = BasicApiReturn & {
   created_ids? : string[]
   created_item? : string
 };
 
-type PullFromDbReturnData<pullType> = BasicApiReturn & {
+type PullFromDbReturn<pullType> = BasicApiReturn & {
   found? : pullType[] 
-  scraper_storage? : string
+  scraper_storage? : number
 };
 
-type PutToDbReturnData = BasicApiReturn & {
+type PutToDbReturn = BasicApiReturn & {
   work_done? : {matched : string, modified : string}
 };
 
-type DeleteFromDbReturnData = BasicApiReturn & {
-  deleted_count? : string
+type DeleteFromDbReturn = BasicApiReturn & {
+  deleted_count? : string | {[index : string] : string}
 };
 
-type LoadScrapeReturnData = BasicApiReturn & PullFromDbReturnData & {
-  found? : ScrapeInfoSave[]
-};
+type LoadScraperReturn = BasicApiReturn & PullFromDbReturn;
 
-type SaveScrapeReturnData = BasicApiReturn & {
-  created_id? : string
-};
+type SaveScraperReturn = BasicApiReturn & PostToDbReturn & PutToDbReturn;
 
 type RunScrapeReturnData = BasicApiReturn & {
-  results? : ScraperInfoResults
+  scraped_data? : ScraperInfoResults
 };
 
-type DeleteScrapeReturnData = BasicApiReturn & PutToDbReturnData & DeleteFromDbReturnData;
+type DeleteScrapeReturnData = BasicApiReturn & PutToDbReturnData & DeleteFromDbReturn;
+
+type GenerateKeyReturn = BasicApiReturn & {
+  created_key? : string
+};
+
+type DeleteUserReturn = BasicApiReturn & PullFromDbReturn & DeleteFromDbReturn;
+
+type CreateUserReturn = PostToDbReturnData & SessionUserData;
+
+type GenerateApiKeyReturn = BasicApiReturn & PostToDbReturnData & PutToDbReturnData;
+
+type CheckUserValidReturn = BasicApiReturn & {
+  user : {
+    _id : string
+    email : string
+    alias : string
+    image : string
+  } 
+};
+
+// Auth
+
+type SessionUserData = {
+  user? : {
+      id : string
+      email : string
+      image : string
+      alias : string
+  }
+}
+
+// App
 
 type AppContextData = {
   colorMode : "dark" | "light"
-    alertData : {
-      text : string
-      color : string
+  alert : {
+    text : string
+    color : string
+  }
+  overlay : {
+    element: null | JSX.Element
+    title: string
+    data?: {
+      results: ScraperInfoResults
     }
-    overlayChild : null | JSX.Element
-    overlayChildTitle : string
-    overlayChildData : {results: ScraperInfoResults}
+  },
+  enabledFeatures : {
+    [index : string] : number
+  }
 };
 
-type AppContextType = {
+type CustomAppContext = {
   appContextData : AppContextData
   setAppContextData : Dispatch<SetStateAction<AppContext>>
-  updateContext : Dispatch<SetStateAction<number>>
 };
-
-type PreviewData = {
-  amount : number
-  data : ScrapeInfoSave
-};
-
-type ChangePassword = BasicApiReturn;
-
-type GenerateKey = BasicApiReturn & {
-  createdKey : string
-}

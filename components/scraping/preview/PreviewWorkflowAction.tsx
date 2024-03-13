@@ -17,7 +17,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
           	className="flex flex-row items-center w-[calc(80%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
           
           <input readOnly type="text" placeholder='selector'
-            value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1].css_selector}
+            value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.css_selector}
             id={`class-input-${scrapeIdx}-${rowIndex}`} 
             className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
           />
@@ -46,7 +46,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
           <input readOnly type="text" 
             className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
             placeholder="selector"
-            value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1].selector}  
+            value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.selector}  
             id={`btn-selector-input-${scrapeIdx}-${rowIndex}`} 
           />
 
@@ -61,7 +61,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
           	className="flex flex-row items-center w-[calc(30%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
 
             <input readOnly type="number" min={3} required placeholder='wait'
-              value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1].wait_after}  
+              value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.wait_after}  
               id={`btn-wait-after-input-${scrapeIdx}-${rowIndex}`} 
               className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
             />
@@ -93,7 +93,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
             className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
             required 
             placeholder="selector"
-            value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1].selector}  
+            value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.selector}  
             id={`input-selector-input-${scrapeIdx}-${rowIndex}`} 
           />
 
@@ -108,7 +108,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
           	className="flex flex-row items-center w-[calc(80%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
 
           <input readOnly type="text" required placeholder='content'
-            value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1].fill_content}  
+            value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.fill_content}  
             id={`input-fill-content-input-${scrapeIdx}-${rowIndex}`} 
             className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
           />
@@ -137,7 +137,7 @@ const PreviewWorkflowAction = ({scraperInfos, type, scrapeIdx, rowIndex} :  { ty
             className='text-[16px] pl-2 h-[calc(100%-6px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]' 
             required 
             placeholder="wait"
-            value={scraperInfos.all[scrapeIdx].workflow[rowIndex][1]["time_to_wait"]}  
+            value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data.time_to_wait}  
             id={`btn-selector-input-${rowIndex}`} 
           />
 

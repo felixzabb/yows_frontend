@@ -1,8 +1,8 @@
 "use client"
 import ErrorComponent from "@components/docs/ErrorComponent";
+import { inputElementValue } from "@utils/elementFunction";
 import errorCodes from "@utils/errorCodes.json";
 import { useRouter } from "next/navigation";
-import { returnInputElementValue } from "@utils/generalFunctions";
 
 const ErrorPage = () => {
   const {push} = useRouter();
@@ -17,7 +17,7 @@ const ErrorPage = () => {
               type="text"
               id={"errors-search-input"}
             />
-            <button className="rounded-lg bg-purple-400 text-[18px] font-[600] p-2" onClick={() => { push(`/errors#${returnInputElementValue({elementId: "errors-search-input"}).toUpperCase()}`); }}> Search</button>
+            <button className="rounded-lg bg-purple-400 text-[18px] font-[600] p-2" onClick={() => { push(`/errors#${inputElementValue({elementId: "errors-search-input"}).toUpperCase()}`); }}> Search</button>
           </div>
         </form >
         

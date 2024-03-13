@@ -7,62 +7,43 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import PreviewWS from "../scraping/preview/PreviewWS";
-import { adjustTextareaHeight, showHideElement } from "@utils/generalFunctions";
-import { ScraperInfoResults, ScrapeInfoSave } from "@custom-types";
 import Tooltip from "@components/design/Tooltip";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
+import { showElement, showHideElement } from "@utils/elementFunction";
+import { showOverlay } from "@utils/generalFunctions";
+import { AppContextData, CustomAppContext, SavedScraper, ScrapedData } from "@custom-types";
+import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
 
 const SavedScrapes = ({ User, AuthStatus }) => {
 
-  const context = useContext(appContext);
+  const context = useContext<CustomAppContext>(appContext);
 
-  const emptyResults : ScraperInfoResults = {
-    empty: true,
-    0 : {
-      scrape_runs : {0 : []}
-    }
-  };
+  const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
 
-  const [ savedScrapes, setSavedScrapes ] = useState<ScrapeInfoSave[]>(null);
-  const [ maxScrapes, setMaxScrapes ] = useState("10");
+  const [ savedScrapes, setSavedScrapes ] = useState<SavedScraper[]>(null);
+  const [ maxScrapes, setMaxScrapes ] = useState(10);
 
-  const [ runResults, setRunResults ] = useState<ScraperInfoResults>(emptyResults);
-
-  const [ update, setUpdate ] =useState(1);
+  const [ runResults, setRunResults ] = useState<ScrapedData>(emptyScrapedData);
 
   const { push } = useRouter();
 
-  const rerenderPage = () : void => {
-    setUpdate((prevUpdate) => { return (prevUpdate +1) % 2; });
-    return;
-  };
+  const showSavedScraperData = ({getIdx} : {getIdx : number}) => {
+    
+    context.setAppContextData((prevAppContextData : AppContextData) => {
 
-  const showPreview = ({context, title, getIdx} : {context : any, title : string, getIdx : number}) => {
+      prevAppContextData.overlay.element = <ScrapedDataOverlay scrapedData={savedScrapes.at(getIdx).scraped_data} saveAbility={false} />;
+      prevAppContextData.overlay.title = "Scraped data!";
 
-    const overlayContentContainer = window.document.getElementById("document-overlay-container");
-    if(overlayContentContainer === null){ return; }
-    const setContext = context.setAppContextData;
-
-    setContext((prevContextData) => {
-
-      prevContextData.overlayChild = (
-        <fieldset className="w-full h-full" disabled >
-          <PreviewWS previewData={{data: savedScrapes.at(getIdx), amount: (Object.keys(savedScrapes.at(getIdx).scrape_object.all)).length}} />
-        </fieldset>
-      );
-
-      prevContextData.overlayChildTitle = title;
-      return prevContextData;
-    });
-    showHideElement({elementId: "document-overlay-container"});
-    context.updateContext((prevUpdate) => { return (prevUpdate +1) % 2});
-
-    return;
+      return {
+        ...prevAppContextData,
+      };
+    })
+    showElement({elementId: "document-overlay-container"});
   };
 
   const useScraper = ({useIdx} : {useIdx : number}) : void => {
 
-    window.sessionStorage.setItem("passedSavedObject", JSON.stringify(savedScrapes[useIdx].scrape_object))
+    window.sessionStorage.setItem("passedSavedObject", JSON.stringify(savedScrapes[useIdx].scraper))
     window.sessionStorage.setItem("usePassed", "1")
 
     push(`/new-scraper`);
@@ -76,13 +57,18 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
     if(!confirmation){ return; }
       
-    await deleteScrape({apiKey: "felix12m", scrapeId: savedScrapes[getIdx]._id, userId: User.id});
+    const deleteOperation = await deleteScrape({apiKey: "felix12m", scrapeId: savedScrapes[getIdx]._id, userId: User.id});
+
+    if(!deleteOperation.acknowledged){
+      push(`?app_error=${deleteOperation.errors[0]}&e_while=deleting%20saved%20scraper`);
+      return
+    };
 
     // positive deletion, revalidation only happens on refresh of the page
-    savedScrapes.splice(getIdx, 1);
+    const newSavedScrapers = savedScrapes;
+    newSavedScrapers.splice(getIdx, 1);
 
-    rerenderPage();
-
+    setSavedScrapes([...newSavedScrapers]);
     return;
   };
 
@@ -97,7 +83,12 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
     const put_data = {filter : {_id : savedScrapes[getIdx]._id}, update: {"$set" : {"name" : savedScrapes[getIdx].name, "description" : savedScrapes[getIdx].description}}};
 
-    await putToDb({apiKey: "felix12m", dbName: "test_runs", collectionName: "scrape_info_saves", data: put_data});
+    const editOperation = await putToDb({apiKey: "felix12m", dbName: "test_runs", collectionName: "scrape_info_saves", data: put_data});
+
+    if(!editOperation.acknowledged){
+      push(`?app_error=${editOperation.errors[0]}&e_while=saving%20edits`);
+      return;
+    };
 
     return;
   };
@@ -106,86 +97,50 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
     if(savedScrapes === null && savedScrapes === undefined ){ return; }
 
-    let dataCopy = savedScrapes;
+    const newSavedScrapers = savedScrapes;
+    newSavedScrapers[getIdx][pName] = value;
 
-    dataCopy[getIdx][pName] = value;
-
-    setSavedScrapes(dataCopy);
-    rerenderPage();
+    setSavedScrapes([...newSavedScrapers]);
     return;
   };
 
-  const updateSavedData = ({scrapedData, getIdx} : {scrapedData : ScraperInfoResults, getIdx : number}) => {
-
-    setSavedScrapes((prevSavedScrapes) => {
-      prevSavedScrapes.at(getIdx).results = scrapedData;
-      return prevSavedScrapes;
+  const updateSavedData = ({scrapedData, getIdx} : {scrapedData : ScrapedData, getIdx : number}) => {
+    setSavedScrapes((prevSavedScrapers) => {
+      prevSavedScrapers.at(getIdx).scraped_data = scrapedData;
+      return [...prevSavedScrapers];
     });
     showHideElement({elementId: "document-overlay-container"});
-    rerenderPage();
-  };
-
-  const showOverlay = ({type, title} : {type : string, title : string} , kwargs : any) => {
-
-    const overlayContentContainer = window.document.getElementById("document-overlay-container");
-    if(overlayContentContainer === null){return;}
-    const setContext = context.setAppContextData;
-
-    setContext((prevContextData) => {
-
-      if(type === "run"){
-        prevContextData.overlayChild = <ScrapedDataOverlay updateSavedData={updateSavedData} expectedWaitTime={Number(savedScrapes.at(kwargs.getIdx).runtime)} saveAbility={true} currentScrapeId={savedScrapes.at(kwargs.getIdx)._id} currentScrapeIndex={kwargs.getIdx} />
-      }
-      else if(type === "scrapedData"){
-        prevContextData.overlayChild = <ScrapedDataOverlay saveAbility={false} />
-      }
-
-      prevContextData.overlayChildTitle = title;
-
-      return prevContextData;
-    });
-
-    if(kwargs.results !== undefined){
-      setContext((prevAppContextData) => {
-        prevAppContextData.overlayChildData.results = kwargs.results;
-        return prevAppContextData;
-      });
-    };
-    showHideElement({elementId: "document-overlay-container"});
-    context.updateContext((prevUpdate) => { return (prevUpdate +1) % 2});
-
   };
 
   const runWebScrape = async ({getIdx} : {getIdx : number}) : Promise<void> => {
 
-    context.setAppContextData((prevAppContextData) => {
-      prevAppContextData.overlayChildData.results = emptyResults;
-      return prevAppContextData;
-    });
+    showOverlay({context: context, title: "Running scraper!", element: <ScrapedDataOverlay scrapedData={emptyScrapedData} updateSavedData={updateSavedData} saveAbility={true} currentScrapeId={savedScrapes.at(getIdx)._id} currentScrapeIndex={getIdx} /> });
 
-    showOverlay({type: "run", title: "Running scraper!"}, {getIdx: getIdx});
+    let payload = savedScrapes[getIdx].scraper;
+    payload.args.amount_scrapes_global = savedScrapes[getIdx].scraper.all.length; // value is passed to decide if multithreading is 'possible'
 
-    let bodyData = savedScrapes[getIdx].scrape_object;
-    bodyData.args.amount_scrapes_global = Object.keys(savedScrapes[getIdx].scrape_object.all).length; // value is passed to decide if multithreading is 'possible'
+    const runOperation = await runScrape({apiKey: "felix12m", userId: User.id, data: payload});
 
-    const stringified = JSON.stringify(bodyData);
+    if(!runOperation.acknowledged){
+      push(`?app_error=${runOperation.errors[0]}&e_while=running%20scraper`);
+      return;
+    };
 
-    const runOperation = await runScrape({apiKey: "felix12m", userId: User.id, data: stringified})
+    setRunResults(runOperation.scraped_data); 
 
-    setRunResults(runOperation.results); 
+    showOverlay({context: context, title: "Running scraper!", element: <ScrapedDataOverlay scrapedData={runOperation.scraped_data} updateSavedData={updateSavedData} saveAbility={true} currentScrapeId={savedScrapes.at(getIdx)._id} currentScrapeIndex={getIdx} /> });
 
-    context.setAppContextData((prevAppContextData) => {
-      prevAppContextData.overlayChildData.results = runOperation.results;
-      return prevAppContextData;
-    });
-
-    context.updateContext((prevUpdate) => { return (prevUpdate +1) % 2});
     return;
   };
 
   const getAllSavedScrapes = async () : Promise<void> => {
 
     const pull_operation = await pullSavedScrapes({apiKey: "felix12m", userId: User.id});
+
+    if(!pull_operation.acknowledged){
+      push(`?app_error=${pull_operation.errors[0]}&e_while=pulling%20saved%20scrapers`);
+      return
+    };
 
     setSavedScrapes(pull_operation.found);
     setMaxScrapes(pull_operation.scraper_storage);
@@ -194,26 +149,24 @@ const SavedScrapes = ({ User, AuthStatus }) => {
   };
   
   var savedScrapesInitialFetch = true;
-
   useEffect(() => {
+
+    if(AuthStatus === "unauthenticated"){
+      showOverlay({context: context, element: <NotSignedInDialog message="You can't access/have saved scrapers. Please create an account or sign in!" />, title: "Not signed in!"});
+      return;
+    };
     
-    if(savedScrapesInitialFetch){
+    if(AuthStatus === "authenticated" && savedScrapesInitialFetch){
       getAllSavedScrapes();
       savedScrapesInitialFetch = false;
-    }
-
-    if(savedScrapes === undefined || savedScrapes === null){ return; }
-
-    const allKeys = Object.keys(savedScrapes);
-    
-    for (const key of allKeys){ adjustTextareaHeight({elementId: `scraper-description-${key}`, offset: 60}); }
+    };
 
   }, []);
 
-  if(savedScrapes !== null && savedScrapes?.at(0) === undefined){
+  if(AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])){
     return (
       <div className="c_col_elm w-full h-auto " >
-        <h1 className="subhead_text pb-1" > You have no saved scrapes</h1>
+        <h1 className="subhead_text pb-1" > You have no saved scrapers</h1>
         <hr className="w-[95%] bg-black h-[2px] mb-4 " />
       </div>
 
@@ -225,7 +178,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
       <h1 id="saved-scrapers-heading" className="font-[Inter] text-[40px] my-5" >
         {
-          savedScrapes === null ?
+          !savedScrapes ?
             (
               "Pulling saved scrapers..."
             )
@@ -238,7 +191,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
       <div id="saved-scrapers-amount-wrapper" className="c_row_elm w-full justify-start px-[2.5%] mb-1 gap-x-5 " >
         {
-          savedScrapes !== null && 
+          savedScrapes && 
             (
               <h2 id="saved-scrapers-amount-heading" className="text-[18px] font-[700] px-1" >
                 {`Amount: ${Object.keys(savedScrapes).length} of ${maxScrapes}`}
@@ -252,14 +205,15 @@ const SavedScrapes = ({ User, AuthStatus }) => {
       <div id="saved-scrapers-wrapper" className="c_col_elm w-full h-auto gap-y-5 " >
 
         {
-          savedScrapes === null && (
+          !savedScrapes && (
             <ScaleLoader height={50} width={4} margin={3} speedMultiplier={2} color="#8A2BE2" />
           )
         }
 
         {
-          savedScrapes !== null && Array.from(savedScrapes.keys()).map((saveIdx) => {
-
+          
+          savedScrapes && Array.from(savedScrapes.keys()).map((saveIdx) => {
+            
             return(
               <section key={`saved-scraper-${saveIdx}`} id={`saved-scraper-${saveIdx}`} className=" relative w-[90%] h-auto flex flex-col items-center border-2 border-gray-600 dark:border-gray-300 bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg rounded-xl px-2 " >
 
@@ -285,7 +239,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                         <Tooltip content={"Show scraper metadata."} /> 
                       </div>
 
-                      <Image id={`saved-scraper-heading-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} onClick={() => { showHideElement({elementId: `saved-scraper-meta-container-${saveIdx}`}); showHideElement({elementId: `saved-scraper-options/meta-separator-${saveIdx}`}) ;rerenderPage(); }} />
+                      <Image id={`saved-scraper-heading-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} onClick={() => { showHideElement({elementId: `saved-scraper-meta-container-${saveIdx}`}); showHideElement({elementId: `saved-scraper-options/meta-separator-${saveIdx}`}); }} />
 
                     </div>
                   </div>
@@ -308,7 +262,10 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                       <Tooltip content={"Preview the scraper."} /> 
                     </div>
 
-                    <Image id={`preview-scraper-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/view.svg' alt='html id name input tooltip icon' width={40} height={40} onClick={() => { showPreview({context: context, title: "Preview your scraper!", getIdx: saveIdx}); }} />
+                    <Image id={`preview-scraper-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/view.svg' alt='html id name input tooltip icon' width={40} height={40} onClick={() => { showOverlay({context: context, title: "Preview your scraper!", element: <fieldset className="w-full h-full" disabled >
+                                                                                                                                                                                                                                                                                          <PreviewWS previewData={savedScrapes.at(saveIdx).scraper} />
+                                                                                                                                                                                                                                                                                        </fieldset>}); }} 
+                    />
 
                   </div>
 
@@ -321,9 +278,9 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                     </div>
 
                     {
-                      !savedScrapes.at(saveIdx).results.empty ?
+                      savedScrapes.at(saveIdx).scraped_data[0].scrape_runs[0] ?
                         (
-                          <Image id={`scraped-data-tooltip-toggle`} src='/assets/icons/generic/data.svg' className="cursor-pointer" alt='html id name input tooltip icon' width={40} height={40} onClick={() => { showOverlay({type: "scrapedData", title: "Scraped data!"}, {getIdx: saveIdx, results: savedScrapes.at(saveIdx).results}) }} />
+                          <Image id={`scraped-data-tooltip-toggle`} src='/assets/icons/generic/data.svg' className="cursor-pointer" alt='html id name input tooltip icon' width={40} height={40} onClick={() => { showSavedScraperData({getIdx: saveIdx}); }} />
                         )
                         :
                         (

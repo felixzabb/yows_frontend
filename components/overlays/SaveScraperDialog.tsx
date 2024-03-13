@@ -1,21 +1,52 @@
 "use client";
 
-import { ScraperInfoResults } from "@custom-types";
-import { adjustTextareaHeight, returnInputElementChecked, returnInputElementValue } from "@utils/generalFunctions";
+import { CustomAppContext, SaveScraperReturn, ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
+import { inputElementChecked, inputElementValue } from "@utils/elementFunction";
 import { FormEvent, MouseEvent } from "react";
+import { saveScraper } from "@utils/api_funcs";
+import { createAlert, showOverlay } from "@utils/generalFunctions";
 
-const SaveScrapeDialog = ({results, generateExport} : 
-  {
-    results : ScraperInfoResults,
-    generateExport : ({name, description, withRes} : {name : string | (() => string), description : string | (() => string), withRes : boolean}) => Promise<void>}) => {
+const SaveScraperDialog = ({scraperInfos, userData, scrapedData, expectedRuntime, push, userId, context} : {scraperInfos : ScraperInfos, userData : {api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null, scrapedData : ScrapedData, expectedRuntime : number, push : (href : string) => void, userId : string, context : CustomAppContext}) => {
+
+  const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
+
+  const exportScraper = async ({name, description, withRes} : {name : string, description : string, withRes : boolean}) : Promise<void> => {
+
+    const saveData = [{scraper : scraperInfos, name: name, description: description, runtime: expectedRuntime, scraped_data: withRes ? scrapedData : emptyScrapedData}];
+
+    const saveOperation : SaveScraperReturn = await saveScraper({apiKey: "felix12m", userId: userId, data: saveData});
+
+    if(!saveOperation.acknowledged){
+      push(`?app_error=${saveOperation.errors[0]}&e_while=saving%20scraper`);
+      return;
+    };
+
+    navigator.clipboard.writeText(saveOperation.created_item);
+
+    createAlert({context: context, textContent: "Saved scraper successfully! ID copied to clipboard.", duration: 2000, color: "normal"});
+
+    return;
+  };
   
   const submit = (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => {
-    e.preventDefault(); 
-    generateExport({ 
-      name: returnInputElementValue({elementId: "save-scrape-name"}), 
-      description: returnInputElementValue({elementId: "save-scrape-desc"}), 
-      withRes: !returnInputElementChecked({elementId: "save-scrape-results"}) 
+    e.preventDefault();
+
+    if(userData.saved_scrapers.length >= userData.subscription.scraper_storage){
+      showOverlay({context: context, title: "Can't save scraper!", element: <h2 id="can-not-save-scraper" className="text-[18px] font-[400] font-inter">{`You already have reached your limit for saved scrapers(${userData.saved_scrapers.length}).If you want to save more, please increase your limit at Profile > Subscription > scraper storage.`}</h2>})
+      return;
+    };
+
+    exportScraper({ 
+      name: inputElementValue({elementId: "save-scrape-name"}), 
+      description: inputElementValue({elementId: "save-scrape-desc"}), 
+      withRes: inputElementChecked({elementId: "save-scrape-results"}),
     });
+
+    const form = window.document.getElementById("save-scrape-form") as HTMLFormElement;
+    form.reset();
+    window.document.getElementById("document-overlay-container").classList.add("hidden");
+
+    return;
   };
 
   return (
@@ -32,10 +63,10 @@ const SaveScrapeDialog = ({results, generateExport} :
         placeholder={"Description"} 
         id={"save-scrape-desc"} 
         className="min-w-[60%] w-auto h-max min-h-[120px] text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 rounded-s-none rounded-es-lg rounded-se-lg " 
-        onChange={(e) => { adjustTextareaHeight({elementId: e.target.id, offset: 0}); }} />
+      />
 
       {     
-        results !== undefined && !results.empty ? 
+        scrapedData[0].scrape_runs[0]? 
           (
             <label className="inline-flex items-center cursor-pointer">
               <h3 className="pr-4 text-[18px] text-start font-[600] mb-[6px]" >Save results:</h3>
@@ -61,4 +92,4 @@ const SaveScrapeDialog = ({results, generateExport} :
   );
 };
 
-export default SaveScrapeDialog;
+export default SaveScraperDialog;
