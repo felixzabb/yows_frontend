@@ -8,7 +8,7 @@ import { CustomAppContext, ScrapeData, ScrapedData, ScraperInfos, UserApiData, U
 import { Dispatch, SetStateAction } from "react";
 
 const WSFormSideNav = (
-  {amountScrapes, readiness, userData, setReadiness, newSubmit, deleteSpecificScrape, User, authStatus, calculateWaitTime, scrapedData, setScrapedData, push, context, scraperInfos, setScraperInfos, defScraperInfos, defScrapeData} 
+  {amountScrapes, readiness, userData, setReadiness, newSubmit, deleteSpecificScrape, User, authStatus, calculateWaitTime, scrapedData, setScrapedData, push, context, scraperInfos, setScraperInfos, defScraperInfos, defScrapeData, scraperRunning} 
   :
   {
     amountScrapes : number, 
@@ -27,7 +27,8 @@ const WSFormSideNav = (
     scraperInfos : ScraperInfos, 
     setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>, 
     defScraperInfos : ScraperInfos,
-    defScrapeData : ScrapeData
+    defScrapeData : ScrapeData,
+    scraperRunning : boolean
   }
   ) => {
 
@@ -43,6 +44,9 @@ const WSFormSideNav = (
     setScraperInfos(defScraperInfos);
     setScrapedData(emptyScrapedData);
     setReadiness({all: false, 0: false});
+
+    hideElement({elementId: `loop-container-0`});
+    hideElement({elementId: `actions-loop-separator-0`});
 
   };
 
@@ -138,7 +142,7 @@ const WSFormSideNav = (
           
           <div id={"run-scraper-option-wrapper"} className="flex flex-row items-center gap-x-2 w-auto h-auto" >
             {
-              readiness.all ? 
+              !scraperRunning && readiness.all ? 
                 (
                   <Image
                     src={"/assets/icons/scrape/rocket.svg"}
@@ -289,7 +293,7 @@ const WSFormSideNav = (
           
           <div id={"show-results-option-wrapper"} className="flex flex-row items-center gap-x-2 w-auto h-auto" >
             {
-              scrapedData[0].scrape_runs.length !== 0 ? 
+              scrapedData[0].scrape_runs?.length ? 
                 ( 
                   <Image
                     src={"/assets/icons/generic/data.svg"}

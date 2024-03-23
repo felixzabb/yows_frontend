@@ -18,6 +18,7 @@
     "clsx": "^2.1.0",
     "cors": "^2.8.5",
     "eslint": "^8.57.0",
+    "highlight.js": "^11.9.0",
     "lucide-react": "^0.343.0",
     "mongodb": "^6.2.0",
     "mongoose": "^7.6.3",
@@ -30,6 +31,7 @@
     "react-email": "^2.0.0",
     "react-spinners": "^0.13.8",
     "sharp": "^0.33.2",
+    "tailwind-highlightjs": "^2.0.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "tsc": "^2.0.4"

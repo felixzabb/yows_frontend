@@ -5,57 +5,61 @@ const ErrorComponent = ({errorCodes, errorPath} : {errorCodes : object, errorPat
     AUTH : "Authorization",
     DB : "Database",
     SCRAPE: "Scraping",
-    SERVER: "Server"
-  }
+    SERVER: "Server",
+    UNKNOWN: "Unknown",
+  };
 
   return (
-    <>
-      <div key={`error-path-div-${errorPath}`} className=" max-w-[1600px] w-[80%] h-auto bg-stone-300 rounded-xl">
-
-        <h1 id={errorPath} className={" text-left bg-stone-400 text-[26px] font-[700] p-4 w-full max-w-[1600px] rounded-ss-xl rounded-se-xl h-auto"} > {errorTranslator[errorPath] + ` (${errorPath})`} </h1>
-        <hr className="border-black border-[2px]" />
-        
-        {
-          Object.keys(errorCodes[errorPath]).map((errorType)=>{
-            return(
-              <div  key={`error-type-div-${errorType}`} className="w-full h-auto  " >
-                <hr id={`${errorPath}-${errorType}`} />
-                <h2 id={errorType} className="text-[20px] w-full text-left p-5 font-[700] underline" > {errorPath +"-"+errorType} </h2>
-                
-                
-                {
-                  Object.keys(errorCodes[errorPath][errorType]).map((errorIndex) => {
-                    return(
-                      <div key={errorIndex} id={`${errorPath}-${errorType}-${errorIndex}`} className="w-full h-auto ">
-                        <div className="flex flex-row gap-x-2 h-auto w-full items-end justify-start" >
-                          <h3 className="w-auto h-auto font-[600] text-[20px] text-left ml-10 p-1">{errorIndex}</h3>
-                          {
-                            (errorCodes[errorPath][errorType][errorIndex].tags as string[]).map((tag) => {
-                              return(
-                                <h4 className="w-auto h-auto font-[500] text-[16px] text-left  rounded-lg p-1 border-2 cursor-pointer " key={`error-tag-${tag}`} > {"#" + tag}</h4>
-                              )
-                            })
-                          }
-                        </div>
-                        <h4 className="text-left ml-10 text-[18px] font-[500]" >Description:</h4>
-                        <p className="text-left ml-10">{errorCodes[errorPath][errorType][errorIndex].desc}</p> <br/>
-                        <h4 className="text-left ml-10 text-[18px] font-[500]" >Possible fix:</h4>
-                        <p className="text-left ml-10">{errorCodes[errorPath][errorType][errorIndex].possibleFix}</p> <br/>
-                        
+    <section key={`error-path-container-${errorPath}`} className=" max-w-[1600px] w-[80%] h-auto bg-header-light-bg dark:bg-header-dark-bg rounded-xl shadow-[0px_0px_10px_#000000] dark:shadow-[0px_0px_8px_#BBBBBB]">
+      
+      <aside id={`error-path-meta-${errorPath}`} className="w-full h-auto bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg rounded-ss-xl rounded-se-xl" >
+        <h1 id={errorPath} className={" text-left text-[22px] font-[600] p-4 w-full max-w-[1600px] h-auto"} > 
+          {errorTranslator[errorPath] + ` (${errorPath})`} 
+        </h1>
+      </aside>
+      
+      {
+        Object.keys(errorCodes[errorPath]).map((errorType)=>{
+          return(
+            <div  key={`error-type-div-${errorType}`} className="w-full h-auto " >
+              <hr id={`${errorPath}-${errorType}`} className="h-[2px] dark:h-[1px] w-full bg-gray-900 dark:bg-gray-300" />
+              <h2 id={errorType} className="text-[18px] w-full text-left pl-5 py-4 font-[500] underline" > {errorPath +"-"+errorType} </h2>
+               
+              {
+                Object.keys(errorCodes[errorPath][errorType]).map((errorIndex) => {
+                  return(
+                    <div key={errorIndex} id={`${errorPath}-${errorType}-${errorIndex}`} className="w-full h-auto ">
+                      <div className="flex flex-row gap-x-2 h-auto w-full items-end justify-start pb-2" >
+                        <h3 className="w-auto h-auto font-[700] text-[20px] text-left ml-10 p-1">{errorIndex}</h3>
+                        {
+                          (errorCodes[errorPath][errorType][errorIndex].tags as string[]).map((tag) => {
+                            return(
+                              <h4 className="w-auto h-auto font-[500] text-[14px] text-left rounded-lg p-1 border-[1px] border-gray-600 dark:border-gray-300" key={`error-tag-${tag}`} > {"#" + tag}</h4>
+                            )
+                          })
+                        }
                       </div>
-                    )
-                  })
-                }
-                {
-                  errorType != Object.keys(errorCodes[errorPath]).at(-1) &&  <hr className="border-1 border-black" />
-                    
-                }
-              </div>
-            )
-          })
-        }
-      </div>
-    </>
+                      <div className="flex flex-col items-start pb-3" >
+                        <h4 className="text-left ml-10 text-[18px] font-[500]" >Description:</h4>
+                        <p className="text-left ml-10 mb-2">{errorCodes[errorPath][errorType][errorIndex].desc}</p>
+                        <h4 className="text-left ml-10 text-[18px] font-[500]" >Possible fix:</h4>
+                        <p className="text-left ml-10">{errorCodes[errorPath][errorType][errorIndex].possibleFix}</p>
+                      </div>
+                      
+                      
+                    </div>
+                  )
+                })
+              }
+              {
+                errorType != Object.keys(errorCodes[errorPath]).at(-1) &&  <hr className="border-1 border-black" />
+                  
+              }
+            </div>
+          )
+        })
+      }
+    </section>
   );
 };
 

@@ -75,7 +75,7 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                       <input readOnly type="text"
                         required 
                         placeholder="https://example.com"
-                        value={previewData.all[index].global_params.website_url}
+                        value={previewData.all[index].scrape_params.website_url}
                         id={`url-param-${index}`} 
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                       />
@@ -96,7 +96,7 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                         required 
                         placeholder="Browser"
-                        value={previewData.all[index].global_params.browser_type}
+                        value={previewData.all[index].scrape_params.browser_type}
                         id={`browser-param-${index}`}
                       />
 
@@ -113,7 +113,7 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                         min={5}
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                         required 
-                        value={previewData.all[index].global_params.wait_time}
+                        value={previewData.all[index].scrape_params.wait_time}
                         id={`wait-param-${index}`} 
                       />
 

@@ -3,6 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import { CreateUser, checkUserLoginValid, connectToDb } from '@utils/api_funcs';
 import User from '@models/user';
+import { signIn } from 'next-auth/react';
 
 
 const handler = NextAuth({
@@ -30,7 +31,7 @@ const handler = NextAuth({
 					
 					if(!validCheck.acknowledged){ throw new Error(validCheck.errors.at(0), {cause: "VALID_CHECK_FAILED"}); };
 					
-					return {id: validCheck.user._id, email: validCheck.user.email, alias: validCheck.user.alias, image: validCheck.user.image};
+					return {id: validCheck.user[0]._id, email: validCheck.user[0].email, alias: validCheck.user[0].alias, image: validCheck.user[0].image};
 				}
 				catch(error){
 					if(error.cause === "VALID_CHECK_FAILED"){
@@ -49,7 +50,7 @@ const handler = NextAuth({
 	},
 	
 	callbacks: {
-		async session({ session }) {
+		async session({ session, user }) {
 			
 			await connectToDb({dbName: "yows_users"});
 			
@@ -76,15 +77,16 @@ const handler = NextAuth({
 				const possibleUser = await User.findOne({
 					email: profile.email,
 				});
-				
-				if(possibleUser){ 
-					throw new Error("AUTH-SIGNIN-3", {cause: "USER_ALREADY_EXISTS"});
+
+				if(!possibleUser){
+					await CreateUser({apiKey: "felix12m", provider: authProvider, email: profile.email, alias: "none", image: profile["picture"], scheme: "default"});
+					return true;
+				}
+				else if(possibleUser && possibleUser.provider === authProvider){
+					return true;
 				};
 				
-				await CreateUser({apiKey: "felix12m", provider: authProvider, email: profile.email, alias: "none", image: profile["picture"], scheme: "default"})
-				
-				return true;
-				
+				throw new Error("AUTH-SIGNIN-3", {cause: "USER_ALREADY_EXISTS"});
 			}
 			catch(error){
 				if(error.cause === "USER_ALREADY_EXISTS"){

@@ -13,6 +13,7 @@ import { showElement, showHideElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
 import { AppContextData, CustomAppContext, SavedScraper, ScrapedData } from "@custom-types";
 import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
+import LoadingDialog from "@components/overlays/LoadingDialog";
 
 const SavedScrapes = ({ User, AuthStatus }) => {
 
@@ -114,7 +115,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
   const runWebScrape = async ({getIdx} : {getIdx : number}) : Promise<void> => {
 
-    showOverlay({context: context, title: "Running scraper!", element: <ScrapedDataOverlay scrapedData={emptyScrapedData} updateSavedData={updateSavedData} saveAbility={true} currentScrapeId={savedScrapes.at(getIdx)._id} currentScrapeIndex={getIdx} /> });
+    showOverlay({context: context, title: "Scraped data", element: <LoadingDialog expectedWaitTime={savedScrapes[getIdx].runtime}/>});
 
     let payload = savedScrapes[getIdx].scraper;
     payload.args.amount_scrapes_global = savedScrapes[getIdx].scraper.all.length; // value is passed to decide if multithreading is 'possible'
@@ -163,42 +164,29 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
   }, []);
 
-  if(AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])){
-    return (
-      <div className="c_col_elm w-full h-auto " >
-        <h1 className="subhead_text pb-1" > You have no saved scrapers</h1>
-        <hr className="w-[95%] bg-black h-[2px] mb-4 " />
-      </div>
-
-    );
-  };
-
   return (
-    <div id="saved-scrapers-container" className="c_col_elm w-full h-auto " >
+    <div id="saved-scrapers-container" className="c_col_elm w-full h-auto -mt-[80px]" >
 
       <h1 id="saved-scrapers-heading" className="font-[Inter] text-[40px] my-5" >
-        {
-          !savedScrapes ?
+        { 
+          !savedScrapes ? 
             (
               "Pulling saved scrapers..."
-            )
-            :
-            (
-              "All your saved scrapers"
+            ) 
+            : 
+            ( 
+              AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0]?._id) ? 
+                ("You have no saved scrapers") 
+                : ("All your saved scrapers" )
             )
         }
       </h1>
 
-      <div id="saved-scrapers-amount-wrapper" className="c_row_elm w-full justify-start px-[2.5%] mb-1 gap-x-5 " >
-        {
-          savedScrapes && 
-            (
-              <h2 id="saved-scrapers-amount-heading" className="text-[18px] font-[700] px-1" >
-                {`Amount: ${Object.keys(savedScrapes).length} of ${maxScrapes}`}
-              </h2>
-            )
-        }
-      </div>
+      {
+        <h2 id="saved-scrapers-amount-heading" className="text-[18px] text-start w-[95%] font-[700] px-1" >
+          {`Amount: ${savedScrapes ? (Object.keys(savedScrapes).length) : ((AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])) ? ("0") : ("?"))} of ${maxScrapes}`}
+        </h2>
+      }
 
       <hr id="saved-scrapers-separator" className="w-[95%] bg-black h-[2px] mb-4 " />
 
@@ -222,7 +210,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                   <div id={`copy-id-container-${saveIdx}`} className="relative group flex items-center justify-center min-w-[30px] h-full mb-[-3px]" >
 
                     <div id={`copy-id-tooltip-wrapper-${saveIdx}`} className="h-auto w-auto hidden group-hover:flex " >
-                      <Tooltip xOrientation="right" content={"Copy scraper ID."} /> 
+                      <Tooltip xOrientation="left" content={"Copy scraper ID."} /> 
                     </div>
 
                     <Image id={`copy-id-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/copy.svg' alt='html id name input tooltip icon' width={26} height={26} onClick={() => { copyScrapeId({getIdx: saveIdx}); }} />
@@ -335,13 +323,13 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                       />
                     </h2>
 
-                    <div id={`save-meta-changes-container-${saveIdx}`} className="group flex items-center justify-center min-w-[30px] h-min mb-[-3px] absolute right-[600px] bottom-4 " >
+                    <div id={`save-meta-changes-container-${saveIdx}`} className=" absolute right-0 bottom-4 group flex items-center justify-center min-w-[30px] h-min mb-[-3px] " >
 
                       <div id={`save-meta-changes-tooltip-wrapper-${saveIdx}`} className="relative h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip content={"Save changes."} /> 
+                        <Tooltip yOrientation="bottom" content={"Save changes."} /> 
                       </div>
 
-                      <Image id={`save-meta-changes-${saveIdx}`} src='/assets/icons/scrape/save.svg' alt="delete saved scrape icon" width={40} height={40} className="cursor-pointer" onClick={() => { editScrape({getIdx: saveIdx}); }}  />
+                      <Image id={`save-meta-changes-${saveIdx}`} src='/assets/icons/scrape/save.svg' alt="delete saved scrape icon" width={50} height={50} className="cursor-pointer" onClick={() => { editScrape({getIdx: saveIdx}); }}  />
                     </div>
 
                 </div>

@@ -60,8 +60,7 @@ const WorkflowElement = ({scraperInfos, setScrapeInfos, removeSpecificWorkflow, 
         onDrop={(e) => {e.preventDefault(); let dropIdx = e.dataTransfer.getData("droppedWorkflowIndex"); handleDrop({scrapeIdx: scrapeIdx, localIndex: workflowIndex, dropIndex: Number(dropIdx)});   }} >
 
         {/** Contauins the actual workflow action info */}
-        <div id={`workflow-action-info-container-${workflowIndex}`} draggable onDragStart={(e) => { e.dataTransfer.setData("droppedWorkflowIndex", String(workflowIndex));  }} 
-          className={` flex flex-col gap-y-1 items-start justify-start w-full h-[100%] min-h-[190px] p-[6px] rounded-md bg-stone-300 cursor-grab active:cursor-grabbing `}  >
+        <div id={`workflow-action-info-container-${workflowIndex}`} draggable onDragStart={(e) => { e.dataTransfer.setData("droppedWorkflowIndex", String(workflowIndex)); }} className={` flex flex-col gap-y-1 items-start justify-start w-full h-[100%] min-h-[190px] p-[6px] rounded-md bg-stone-300 cursor-grab active:cursor-grabbing `}  >
 
           <div className="c_row_elm w-full justify-between" >
 

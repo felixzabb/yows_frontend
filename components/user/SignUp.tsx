@@ -360,7 +360,7 @@ const SignUp = ({AuthStatus, providers, push}) => {
           className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
         />
         
-        <h3 id="sign-up-error" className=" text-red-500 text-[14px] font-[500] w-[90%]" >
+        <h3 id="sign-up-error" className="hidden text-red-500 text-[14px] font-[500] w-[90%]" >
           {signUpError}
         </h3>
 

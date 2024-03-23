@@ -40,15 +40,15 @@ const ApiProfileSettings = ({User, userData, save, push, setUserData}) => {
     <section id="api-settings-container" className="flex flex-col items-start pl-10 w-full h-[98%] overflow-auto justify-start gap-y-8 pt-10" >
 
       <div id="api-keys-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[90%] max-w-[800px] h-auto min-h-[160px] border-2 border-gray-600 dark:border-gray-300" >
-        <h3 id="api-keys-setting-heading" className="text-[22px] font-[600]" >API-keys</h3>
+        <h3 id="api-keys-setting-heading" className="text-[22px] font-[600]" >API-key</h3>
 
         <p id="api-keys-setting-description" className="text-start text-[16px] font-[400]" >
           To interact with the API you need an API-key.
           <br />
-          You can have a maximum of 3!
+          You can have only have 1 key!
         </p>
 
-        <form id="api-keys-setting-form" onSubmit={(e) => {e.preventDefault()}} className="relative w-full h-auto flex items-start" >
+        <div id="api-keys-setting-wrapper" className="relative w-full h-auto flex items-start" >
 
           <div id="api-keys-container" className="flex flex-col lg:flex-row h-min items-start gap-y-2 gap-x-2 w-full min-h-[40px]" >
 
@@ -102,7 +102,7 @@ const ApiProfileSettings = ({User, userData, save, push, setUserData}) => {
               )
           }
           
-        </form>
+        </div>
       </div>
 
       <div id="rate-limit-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[90%] max-w-[800px] h-auto min-h-[160px] border-2 border-gray-600 dark:border-gray-300" >
@@ -111,18 +111,18 @@ const ApiProfileSettings = ({User, userData, save, push, setUserData}) => {
         <p id="rate-limit-setting-description" className="text-start text-[16px] font-[400]" >
           You can only send so many requests per day, this is your rate limit.
           <br />
-          To see how much it costs please visit <Link href="/pricing?product=rate_limit" > <span className="underline font-[600]" >Pricing.</span> </Link>
+          To see how much it costs please visit <Link rel="noopener noreferrer" target="_blank" href="/pricing?product=rate_limit" > <span className="underline font-[600]" >Pricing.</span> </Link>
         </p>
 
-        <form id="rate-limit-setting-form" onSubmit={(e) => {e.preventDefault()}} className="relative w-full h-auto flex items-start min-h-[34px]" >
+        <div id="rate-limit-setting-wrapper" className="relative w-full h-auto flex items-start min-h-[34px]" >
 
           <span className="text-[18px] font-[600]" >{`Current: ${userData.api.rate_limit}`}</span>
 
-          <button id="increase-rate-limit" disabled onClick={() => { push("/buy?product=rate_limit"); }}
+          <Link href={"/pricing?product=rate_limit"} rel="noopener noreferrer" target="_blank" id="increase-rate-limit"
             className=" absolute bottom-0 right-0 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
             Increase limit
-          </button>
-        </form>
+          </Link>
+        </div>
       </div>
 
     </section>

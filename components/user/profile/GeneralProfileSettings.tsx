@@ -27,6 +27,14 @@ const GeneralProfileSettings = ({User, userData, save, push}) => {
     return;
   };
 
+  const changeEmail = async () => {
+    const confirmation = confirm("Are you sure, you want to change your email? This will sign you out and you will need to sign back in.");
+    if(!confirmation){ return; };
+
+    await save({setting: "email", newValue: inputElementValue({elementId: "user-email"})});
+    push("/signup?mode=in");
+  };
+
   const deleteAccount = async () => {
     const confirmation1 = confirm("Are you sure you want to delete your account? This action can NOT be reverted!");
 
@@ -132,18 +140,18 @@ const GeneralProfileSettings = ({User, userData, save, push}) => {
             maxLength={26}
             id="user-email"
             disabled={userData?.provider !== "credentials"}
-            defaultValue={userData?.email === undefined ? (User.email) : (userData?.email)}
+            defaultValue={!userData?.email ? (User.email) : (userData?.email)}
             className="w-full max-w-[340px] p-1 text-start text-[16px] dark:bg-wsform-sideNav-dark-bg bg-wsform-sideNav-light-bg border-black dark:border-gray-200 border-[1px] rounded-md "
           />
 
-          <button disabled={userData?.provider !== "credentials"} id="email-setting-save"  onClick={() => { save({setting: "alias", newValue: inputElementValue({elementId: "user-email"})}); }}
+          <button disabled={userData?.provider !== "credentials"} id="email-setting-save"  onClick={changeEmail}
              className=" absolute bottom-0 right-0 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
             Save
           </button>
         </form>
       </div>
 
-      <div id="password-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[90%] max-w-[800px] h-auto min-h-[200px] border-2 border-gray-600 dark:border-gray-300" >
+      <div id="password-setting-wrapper" className="relative bg-header-light-bg dark:bg-header-dark-bg rounded-lg p-4 flex flex-col items-start justify-center gap-y-2 w-[90%] max-w-[800px] h-max min-h-[120px] border-2 border-gray-600 dark:border-gray-300" >
         <h3 id="password-setting-heading" className="text-[22px] font-[600]" >Password</h3>
 
         <p id="password-setting-description" className="text-start text-[16px] font-[400]" >
@@ -204,7 +212,7 @@ const GeneralProfileSettings = ({User, userData, save, push}) => {
           This action can NOT be reverted!
         </p>
 
-        <button  id="delete-account" onClick={() => { deleteAccount(); }}
+        <button id="delete-account" onClick={() => { deleteAccount(); }}
           className=" absolute bottom-2 right-4 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
             Delete account
         </button>

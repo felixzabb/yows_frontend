@@ -11,6 +11,7 @@ import { showHideElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
 import { appContext } from "@app/layout";
 import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
+import { signOut } from "next-auth/react";
 
 const Profile = ({ User, AuthStatus }) => {
 
@@ -123,6 +124,11 @@ const Profile = ({ User, AuthStatus }) => {
         <button id="profile-sideNav-api" onClick={() => { goToProfileSection({sectionType: "api"})}}
           className="text-[20px] w-full font-[Helvetica] font-[500] p-1 text-start pl-2 border-gray-600 border-[1px] dark:border-gray-300 rounded-lg" >
           Api
+        </button>
+
+        <button id="profile-sideNav-api" onClick={() => {const confirmation = confirm("Are your sure, you want to sign out?"); if(confirmation){signOut({redirect: false}); push("/");}; }}
+          className="text-[20px] w-full font-[Helvetica] font-[500] p-1 text-start pl-2 border-gray-600 border-[1px] dark:border-gray-300 rounded-lg bg-red-600 opacity-80" >
+          Sign out
         </button>
 
       </section>

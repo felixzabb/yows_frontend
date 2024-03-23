@@ -1,3 +1,4 @@
+import { PossibleCssSelectorDataTypes } from "@custom-types";
 
 export const validateEmail = ({email} : {email : string}) => {
   const emailRegex = new RegExp("[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+");
@@ -9,7 +10,41 @@ export const validatePassword = ({password} : {password : string}) : boolean => 
   return passwordRegex.test(password);
 };
 
-export const validateCssSelector = ({cssSelector} : {cssSelector : string}) : boolean => {
+export const validateCssSelector = ({cssSelector, as} : {cssSelector : string, as : PossibleCssSelectorDataTypes}) : boolean => {
+
+  console.log("CSSS:", cssSelector)
+
+  if(cssSelector === ""){ return false; };
+
+  if(as === "json"){
+
+    let jsonValid = true;
+
+    try{
+      if(JSON.parse(cssSelector).length === 0){ return false; };
+      for(const item of JSON.parse(cssSelector)){
+        if(!validateCssSelector({cssSelector: item, as : "text"}) ){
+          jsonValid = false;
+        }
+      }
+
+    }
+    catch{
+      jsonValid = false;
+    } 
+    return jsonValid;
+  }
+  else if(as === "csv"){
+
+    let csvValid = true;
+
+    for(const item of cssSelector.split(",")){
+      if(!validateCssSelector({cssSelector: item, as : "text"})){
+        csvValid = false;
+      }
+    }
+    return csvValid
+  }
 
   if(!cssSelector){ return false; };
   const possibleChars = [".", "#", "~", ">"];
