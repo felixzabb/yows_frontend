@@ -16,21 +16,18 @@ const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {c
    * PARAMS:
    * - id (String): the passed in id, by which the API will search the DB
    */
-  const loadScraper = async ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) : Promise<void>  => {
+  const loadScraper = async ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) : Promise<boolean>  => {
 
-    let confirmation = true;
-
-    if(confirmNeeded){ confirmation = confirm("Loading the link will remove your current work"); }
-    if(!confirmation){ return; }
-
+    if(confirmNeeded && !confirm("Loading the link will remove your current work")){ return; };
+  
     const pullData = {filter : {"_id" : id}, projection: ["scraper", "scraped_data"]};
 
     const pullOperation = await pullFromDb<SavedScraper>({apiKey: "felix12m", dbName: "test_runs", collectionName : "scrape_info_saves", data: pullData});
 
-    if(!pullOperation.acknowledged){
+    if(!pullOperation.acknowledged || pullOperation.found.length === 0){
       setLoadScraperError("Failed to load scraper!");
-      push(`?app_error=${pullOperation.errors[0]}&e_while=loading%20scraper`);
-      return;
+      // push(`?app_error=${pullOperation.errors[0]}&e_while=loading%20scraper`);
+      return false;
     };
 
     const foundScrapeObject : ScraperInfos = pullOperation.found.at(0).scraper;
@@ -46,18 +43,20 @@ const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {c
     
     createAlert({context: context, textContent: "Loaded Scraper successfully!", duration: 2000, color: "normal"});
 
-    return;
+    return true;
   };
 
   const submit = async (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => { 
-    e.preventDefault(); 
+    e.preventDefault();
+    setLoadScraperError("");
     
-    await loadScraper({
+    const loaded = await loadScraper({
       id: inputElementValue({elementId: "scraper-id"}), 
       resultsNeeded: inputElementChecked({elementId:  "scraper-results"}), 
       confirmNeeded: true
     });
 
+    if(!loaded){ return; };
     const form = window.document.getElementById("load-scraper-form") as HTMLFormElement;
     form.reset();
     window.document.getElementById("document-overlay-container").classList.add("hidden");
@@ -79,7 +78,7 @@ const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {c
 
   return (
 
-    <form id={"load-scraper-form"} onSubmit={(e) => {submit(e)}} className="flex flex-col items-center justify-start gap-y-8 w-full h-max " >
+    <form id={"load-scraper-form"} onSubmit={(e) => { submit(e); }} className="flex flex-col items-center justify-start gap-y-8 w-full h-max " >
 
       <h3 id="load-scraper-heading" className="text-[20px] font-[600] " >
         Please enter the ID of the scraper.
@@ -102,7 +101,7 @@ const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {c
       {
         loadScraperDataValid ? 
           (
-            <button id={"load-scraper-submit"} className='dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]' onClick={(e) => {submit(e)}} >
+            <button id={"load-scraper-submit"} className='dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]' onClick={(e) => { submit(e); }} >
               Submit
             </button>
           )

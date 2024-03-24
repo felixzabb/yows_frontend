@@ -41,6 +41,7 @@ const Profile = ({ User, AuthStatus }) => {
 
   const saveSpecificChange = async ({setting, newValue} : {setting : string, newValue : string}) => {
 
+    if(userData?.[setting] === newValue){ return; };
     const setObject = {[setting] : newValue};
 
     const saveOperation = await putToDb({apiKey: "felix12m" , dbName: "yows_users", collectionName: "users", data: {filter: {_id: User.id}, update: {"$set" : setObject}}});

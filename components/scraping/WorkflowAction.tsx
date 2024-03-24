@@ -44,16 +44,7 @@ const WorkflowAction = ({ handleChange, scraperInfos, setScraperInfos, type, scr
         inputType: "text",
         placeholder: "selector",
         pName: "css_selector",
-        width: "60"
-      },
-      {
-        tooltip: "Enter a valid integer(0-10).",
-        inputType: "number",
-        placeholder: "wait",
-        pName: "wait_after",
-        minValue: 2,
-        maxValue: 10,
-        width: "20"
+        width: "80"
       }
     ],
     "input-fill": [
@@ -97,7 +88,7 @@ const WorkflowAction = ({ handleChange, scraperInfos, setScraperInfos, type, scr
               className={`flex flex-row items-start w-[calc(${actionData.width}%+12px)] min-h-[40px] h-max rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px]`} >
 
               {
-                actionData.pName === "css_selector" && scraperInfos.all[scrapeIdx].workflow[rowIndex].data.as !== "text" ?
+                (actionData.pName === "css_selector" && scraperInfos.all[scrapeIdx].workflow[rowIndex].data.as !== "text") || actionData.pName === "fill_content" ?
                   (
                     <textarea required
                       placeholder={`${actionData.placeholder}`}

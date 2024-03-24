@@ -5,9 +5,10 @@ import { changePassword, deleteUser } from "@utils/api_funcs";
 import { signOut } from "next-auth/react";
 import { inputElementValue, showElement, showHideElement } from "@utils/elementFunction";
 import { validatePassword } from "@utils/validation";
+import { useEffect } from "react";
 
 const GeneralProfileSettings = ({User, userData, save, push}) => {
-
+  
   const handlePasswordChange = async () => {
 
     const confirmation = confirm("Are you sure you want to change your password?");
@@ -92,7 +93,7 @@ const GeneralProfileSettings = ({User, userData, save, push}) => {
             type="text"
             maxLength={26}
             id="user-username"
-            defaultValue={userData?.alias === "" ? (User?.name) : (userData?.alias)}
+            defaultValue={userData?.alias}
             className="w-full max-w-[340px] p-1 text-start text-[16px] dark:bg-wsform-sideNav-dark-bg bg-wsform-sideNav-light-bg border-black dark:border-gray-200 border-[1px] rounded-md "
           />
 

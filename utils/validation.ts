@@ -12,8 +12,6 @@ export const validatePassword = ({password} : {password : string}) : boolean => 
 
 export const validateCssSelector = ({cssSelector, as} : {cssSelector : string, as : PossibleCssSelectorDataTypes}) : boolean => {
 
-  console.log("CSSS:", cssSelector)
-
   if(cssSelector === ""){ return false; };
 
   if(as === "json"){

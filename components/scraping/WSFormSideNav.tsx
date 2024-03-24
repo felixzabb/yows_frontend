@@ -4,50 +4,42 @@ import { showOverlay } from "@utils/generalFunctions";
 import SaveScraperDialog from "@components/overlays/SaveScraperDialog";
 import LoadScraperDialog from "@components/overlays/LoadScraperDialog";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
-import { CustomAppContext, ScrapeData, ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
+import { CustomAppContext, ScrapeData, ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData, SessionUserData } from "@custom-types";
 import { Dispatch, SetStateAction } from "react";
 
 const WSFormSideNav = (
-  {amountScrapes, readiness, userData, setReadiness, newSubmit, deleteSpecificScrape, User, authStatus, calculateWaitTime, scrapedData, setScrapedData, push, context, scraperInfos, setScraperInfos, defScraperInfos, defScrapeData, scraperRunning} 
+  {amountScrapes, readiness, resetScrape, userData, newSubmit, deleteSpecificScrape, User, authStatus, calculateWaitTime, scrapedData, setScrapedData, push, context, scraperInfos, setScraperInfos, defScrapeData, scraperRunning} 
   :
   {
-    amountScrapes : number, 
-    readiness : {all : boolean, [index : number ] : boolean},
-    setReadiness : Dispatch<SetStateAction<{all : boolean, [index : number ] : boolean}>>,
-    newSubmit : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => Promise<void>, 
-    deleteSpecificScrape : ({scrapeIdx} : {scrapeIdx : number}) => void,
+    amountScrapes : number
+    resetScrape : ({scrapeIdx} : {scrapeIdx : number}) => void 
+    readiness : {all : boolean, [index : number ] : boolean}
+    newSubmit : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => Promise<void>
+    deleteSpecificScrape : ({scrapeIdx} : {scrapeIdx : number}) => void
     userData : {api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null
-    User : any, 
-    authStatus : "authenticated" | "unauthenticated" | "loading", 
-    calculateWaitTime : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => number, 
-    scrapedData : ScrapedData,
-    setScrapedData : Dispatch<SetStateAction<ScrapedData>>,
-    push : (href : string) => void, 
-    context : CustomAppContext, 
-    scraperInfos : ScraperInfos, 
-    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>, 
-    defScraperInfos : ScraperInfos,
-    defScrapeData : ScrapeData,
+    User : any
+    authStatus : "authenticated" | "unauthenticated" | "loading"
+    calculateWaitTime : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => number
+    scrapedData : ScrapedData
+    setScrapedData : Dispatch<SetStateAction<ScrapedData>>
+    push : (href : string) => void
+    context : CustomAppContext
+    scraperInfos : ScraperInfos
+    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>
+    defScrapeData : ScrapeData
     scraperRunning : boolean
   }
   ) => {
 
-  const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
-
   // Non-data functions
 
   const resetPage = () => {
-    const confirmation = confirm("Are your sure you want to reset the whole scraper?");
+  
+    if(!confirm("Are your sure you want to reset the whole scraper?")){ return; };
 
-    if(!confirmation){return;}
-
-    setScraperInfos(defScraperInfos);
-    setScrapedData(emptyScrapedData);
-    setReadiness({all: false, 0: false});
-
-    hideElement({elementId: `loop-container-0`});
-    hideElement({elementId: `actions-loop-separator-0`});
-
+    for(let i = 0; i < scraperInfos.all.length; i++){
+      resetScrape({scrapeIdx: i});
+    };
   };
 
   /** Appends a scrape to scraperInfo.all 

@@ -34,7 +34,6 @@ type WorkflowData = {
 type ScrapeParams = {
   website_url : string
   url_as : "text" | "json" | "csv"
-  wait_time : number
   browser_type : string
   amount_actions_local : number
   exec_type : "sequential" | "looping"
