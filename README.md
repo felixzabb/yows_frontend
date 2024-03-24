@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./public/assets/icons/log/yows_logo_1.svg" alt="YOWS logo" width="400" height="400" />
+<img src="./public/assets/icons/logo/yows_logo_1.svg" alt="YOWS logo" width="400" height="400" />
 
 # YOWS - Your Own Web Scraper
 

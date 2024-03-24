@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import Image from "next/image";
 import { pullFromDb, runScrape } from "@utils/api_funcs";
 import WorkflowAction from "./WorkflowAction";
-import WorkflowElement from './WorkflowElement';
+import Link from "next/link";
 import { createAlert, handleWindowClose, showOverlay } from "@utils/generalFunctions";
 import { validateBrowserType, validateCssSelector, validateURl } from "@utils/validation";
 import { appContext } from "@app/layout";
@@ -13,9 +13,10 @@ import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { hideElement, rotateElement, showHideElement, isElementVisible } from "@utils/elementFunction";
 import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
 import { useRouter } from "next/navigation";
-import { ScrapedData, ScraperInfos, CustomAppContext, WorkflowData, ScrapeParams, LoopData, SavedScraper, UserProfileData, UserApiData, UserSubscriptionData } from "@custom-types";
+import { ScrapedData, ScraperInfos, CustomAppContext, WorkflowData, ScrapeParams, LoopData, UserApiData, UserSubscriptionData, PossibleCssSelectorDataTypes, PossibleUrlDataTypes } from "@custom-types";
 import WSFormSideNav from "./WSFormSideNav";
 import LoadingDialog from "@components/overlays/LoadingDialog";
+import ChangeDataInterpretationDropdown from "@components/dropdowns/ChangeDataInterpretationDropdown";
 
 const WSForm = ({ User, authStatus }) => {
 
@@ -23,10 +24,10 @@ const WSForm = ({ User, authStatus }) => {
   const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
   const { push } = useRouter();
 
-  const defScrapeData : { workflow : WorkflowData[], global_params : ScrapeParams, loop : LoopData } = {
-    workflow : [{type: "scrape-action", data: {css_selector: ""}}],
-    global_params:{
-      website_url : "", browser_type: "", wait_time : 5, amount_actions_local : 1
+  const defScrapeData : { workflow : WorkflowData[], scrape_params : ScrapeParams, loop : LoopData } = {
+    workflow : [{type: "scrape-action", data: {css_selector: "", as: "text"}}],
+    scrape_params:{
+      website_url : "", url_as : "text", browser_type: "", amount_actions_local : 1, exec_type: "sequential"
     },
     loop: {
       start: 1, end : 1, iterations: 2, created: false,
@@ -35,18 +36,19 @@ const WSForm = ({ User, authStatus }) => {
 
   const defScraperInfos : ScraperInfos = {
     all: [defScrapeData], 
-    args: { user_email: User?.email, amount_scrapes_global: 1, global_expected_runtime: 10, global_undetected: false }
+    args: { user_email: User?.email, amount_scrapes_global: 1, scraper_expected_runtime_seconds: 10, global_undetected: false }
   };
 
   const [ scraperInfos, setScraperInfos ] = useState(defScraperInfos);
   const amountScrapes = scraperInfos?.all.length;
   const [ scrapedData, setScrapedData ] = useState(emptyScrapedData);
+  const [ scraperRunning, setScraperRunning ] = useState(false);
 
-  const [userData, setUserData] = useState<{api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null>(null);
+  const [ userData, setUserData ] = useState<{api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null>(null);
 
   const [ readiness, setReadiness ] = useState<{all: boolean, [index : number]: boolean}>({all: false, 0: false});
 
-    /** Only for dev!!! */
+  /** Only for dev!!! */
   useEffect(() => {
 
     console.log("Rerender...");
@@ -72,7 +74,7 @@ const WSForm = ({ User, authStatus }) => {
     if(wsFormUserDataInitialFetch && authStatus === "authenticated"){
       getProfileData();
       wsFormUserDataInitialFetch = false;
-    }
+    };
   }, [])
 
   useEffect(() => {
@@ -83,21 +85,15 @@ const WSForm = ({ User, authStatus }) => {
       showOverlay({context: context, element: <NotSignedInDialog message="If you want to use all features, please create an account or sign in." />, title: "Not signed in!"});
       return;
     };
-
-    
-    
-    const usePassed = Boolean(Number(window.sessionStorage.getItem("usePassed")));
      
-    if(usePassed){
+    if(Number(window.sessionStorage.getItem("usePassed"))){
       const passedObject : ScraperInfos | null = JSON.parse(window.sessionStorage.getItem("passedSavedObject"));
-      if(passedObject === null){ return; }
-
+      if(!passedObject){ return; }
       setScraperInfos(passedObject);
-
       window.sessionStorage.setItem("usePassed", "0");
+      assertReadiness({amount: passedObject.all.length});
+      console.log("here");
     };
-
-    
 
     window.addEventListener('beforeunload', handleWindowClose);
 
@@ -106,7 +102,28 @@ const WSForm = ({ User, authStatus }) => {
 
   useEffect(() => {
     assertReadiness({amount: amountScrapes});
-  }, [amountScrapes, scraperInfos]);
+  }, [amountScrapes, scraperInfos, userData]);
+
+  // non-data function
+
+  const handleDrop = ({scrapeIdx, localIndex, dropIndex}  :{scrapeIdx : number, localIndex : number, dropIndex : number}) => {
+
+    const newAll = scraperInfos?.all;
+
+    // Assigns the data of the two workflow objects which need to switch places.
+    const firstDataPoint = newAll[scrapeIdx].workflow[localIndex];
+    const secondDataPoint = newAll[scrapeIdx].workflow[dropIndex];
+
+    newAll[scrapeIdx].workflow[localIndex] = secondDataPoint;
+    newAll[scrapeIdx].workflow[dropIndex] = firstDataPoint;
+
+    setScraperInfos((prevScraperInfos) => ({
+      ...prevScraperInfos,
+      all: newAll,
+    }));
+
+    return;
+  };
 
   // Data functions
 
@@ -114,15 +131,19 @@ const WSForm = ({ User, authStatus }) => {
    * PARAMS:
    * - resetScrapeIdx (String): the current index in the scraperInfo.all of the scrape to be reset
    */
-  const resetScrape = ({scrapeIdx} : {scrapeIdx: number}) : void => {
+  const resetScrape = ({scrapeIdx, confirmNeeded} : {scrapeIdx: number, confirmNeeded? : boolean}) : void => {
 
-    const confirmation = confirm("Do you want to reset the current scrape?");
-
-    if(!confirmation){ return; };
+    if(confirmNeeded && !confirm("Do you want to reset the current scrape?")){ return; };
 
     if(isElementVisible({elementId: `loop-container-${scrapeIdx}`})){
       hideElement({elementId: `loop-container-${scrapeIdx}`})
     };
+
+    const sequentialExecutionRadioButton = window.document.getElementById(`execution-type-sequential-${scrapeIdx}`) as HTMLInputElement;
+    sequentialExecutionRadioButton.checked = true;
+
+    const edgeBrowserRadioButton = window.document.getElementById(`browser-edge-${scrapeIdx}`) as HTMLInputElement;
+    edgeBrowserRadioButton.checked = true;
 
     const newAll = scraperInfos.all;
     newAll[scrapeIdx] = defScrapeData;
@@ -131,6 +152,9 @@ const WSForm = ({ User, authStatus }) => {
       ...prevScraperInfos,
       all: newAll,
     }));
+
+    hideElement({elementId: `loop-container-${scrapeIdx}`});
+    hideElement({elementId: `actions-loop-separator-${scrapeIdx}`});
     
     return;
   };
@@ -158,10 +182,10 @@ const WSForm = ({ User, authStatus }) => {
   const appendWorkflow = ({scrapeIdx, type} : {scrapeIdx : number, type : string}) => {
 
     const defaultData = {
-      "scrape-action": {css_selector : ""},
-      "btn-press": {css_selector: "", wait_after: ""},
-      "input-fill": {css_selector: "", fill_content: "" },
-      "wait-time": { time_to_wait: "" },
+      "scrape-action": {css_selector : "", as: "text"},
+      "btn-press": {css_selector: "", as: "text"},
+      "input-fill": {css_selector: "", as: "text", fill_content: "" },
+      "wait-time": { time_to_wait: 5 },
     };
 
     const newAll = scraperInfos.all
@@ -182,12 +206,18 @@ const WSForm = ({ User, authStatus }) => {
     const newAll = scraperInfos.all;
     newAll[scrapeIdx].workflow.splice(workflowIndex, 1);
 
+    if(scraperInfos.all[scrapeIdx].loop.created && scraperInfos.all[scrapeIdx].workflow.length < scraperInfos.all[scrapeIdx].loop.end || scraperInfos.all[scrapeIdx].workflow.length < scraperInfos.all[scrapeIdx].loop.start){
+      newAll[scrapeIdx].loop.start = 1;
+      newAll[scrapeIdx].loop.end = 1;
+    };
+
     setScraperInfos((prevScraperInfos) => {
       return {
         ...prevScraperInfos,
         all: newAll,
       };
     });
+
     return;
   };
 
@@ -269,7 +299,7 @@ const WSForm = ({ User, authStatus }) => {
   const handleGlobalParamChange = ({scrapeIdx, paramName, value} : {scrapeIdx : number, paramName : string, value : string | number | boolean}) : void => {
 
     setScraperInfos((prevScraperInfos) => {
-      prevScraperInfos.all[scrapeIdx].global_params[paramName] = value;
+      prevScraperInfos.all[scrapeIdx].scrape_params[paramName] = value;
 
       return {
         ...prevScraperInfos,
@@ -299,6 +329,19 @@ const WSForm = ({ User, authStatus }) => {
     });
 
     return;
+  };
+
+  const handleUrlTypeChange = ({id, scrapeIdx} : { id: PossibleCssSelectorDataTypes | PossibleUrlDataTypes, scrapeIdx? : number }) : void => {
+
+    const newAll = scraperInfos?.all;
+    console.log("NA:", newAll);
+    console.log(scrapeIdx)
+    newAll[scrapeIdx].scrape_params.url_as = id;
+
+    setScraperInfos((prevScraperInfos) => ({
+      ...prevScraperInfos,
+      all: newAll,
+    }));
   };
 
   // validation functions
@@ -335,29 +378,35 @@ const WSForm = ({ User, authStatus }) => {
     // Runtime
 
     // URL check
-    const scrapeUrl = currentScrapeData.global_params.website_url;
-    if(validateURl({url: scrapeUrl})){
-      window.document.getElementById(`url-param-${scrapeIdx}`).classList.add("border-green-800");
-    }
-    else{
-      window.document.getElementById(`url-param-${scrapeIdx}`).classList.remove("border-green-800");
-      returnValue = false;
-    }
+    const scrapeUrl = currentScrapeData.scrape_params.website_url;
+    const urlAs = currentScrapeData.scrape_params.url_as;
     
-    // Browser check
-    const browserType = currentScrapeData.global_params.browser_type;
-    if(browserType === "" || validateBrowserType({type: browserType})){
-      window.document.getElementById(`browser-param-${scrapeIdx}`).classList.add("border-green-800");
-    }
-    else{ window.document.getElementById(`browser-param-${scrapeIdx}`).classList.remove("border-green-800"); returnValue = false; }
-
-    // Page load time check
-    const pageLoadTime = currentScrapeData.global_params.wait_time;
-    if(pageLoadTime < 5){
-      window.document.getElementById(`wait-param-${scrapeIdx}`).classList.remove("border-green-800");
+    if(urlAs === "text" && !validateURl({url: scrapeUrl})){
+      
       returnValue = false;
     }
-    else{ window.document.getElementById(`wait-param-${scrapeIdx}`).classList.add("border-green-800"); };
+    else if(urlAs === "csv"){
+
+      for(const item of scrapeUrl.split(",")){
+        if(!validateURl({url: item})){
+          returnValue = false;
+        }
+      }
+    }
+    else if(urlAs === "json"){
+
+      try{
+        for(const item of JSON.parse(scrapeUrl)){
+          if(!validateURl({url: item})){
+            returnValue = false;
+          }
+        }
+      }
+      catch{
+        returnValue = false;
+      }
+      
+    }
 
     // Loop check
     if(currentScrapeData.loop.created){
@@ -390,7 +439,7 @@ const WSForm = ({ User, authStatus }) => {
 
         const cssSelector : string = actionData.css_selector;
 
-        const actionValid = validateCssSelector({cssSelector: cssSelector});
+        const actionValid = validateCssSelector({cssSelector: cssSelector, as: actionData.as})
 
         if(actionValid){
           window.document.getElementById(`scrape-action-css_selector-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
@@ -406,23 +455,13 @@ const WSForm = ({ User, authStatus }) => {
 
         const cssSelector = actionData.css_selector;
 
-        const actionValid = validateCssSelector({cssSelector: cssSelector});
+        const actionValid = validateCssSelector({cssSelector: cssSelector, as: actionData.as});
 
         if(actionValid){
           window.document.getElementById(`btn-press-css_selector-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
         }
         else{
           window.document.getElementById(`btn-press-css_selector-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); 
-          returnValue = false;
-        }
-
-        const waitTime = Number(actionData.wait_after);
-
-        if(waitTime <= 10){
-          window.document.getElementById(`btn-press-wait_after-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
-        }
-        else{
-          window.document.getElementById(`btn-press-wait_after-${scrapeIdx}-${actionIndex}-container`).classList.remove("border-green-800"); 
           returnValue = false;
         }
       }
@@ -432,7 +471,7 @@ const WSForm = ({ User, authStatus }) => {
 
         const cssSelector = actionData.css_selector;
 
-        const actionValid = validateCssSelector({cssSelector: cssSelector});
+        const actionValid = validateCssSelector({cssSelector: cssSelector, as: actionData.as});
 
         if(actionValid){
           window.document.getElementById(`input-fill-css_selector-${scrapeIdx}-${actionIndex}-container`).classList.add("border-green-800")
@@ -488,7 +527,7 @@ const WSForm = ({ User, authStatus }) => {
     }
     else{
      
-      let waitTime = Number(scraperInfos.all[scrapeIdx].global_params.wait_time) + 5; // +5 for return and runtime reasons
+      let waitTime = 5; // +5 for return and runtime reasons
 
       
       for(const action of scraperInfos.all[scrapeIdx].workflow){
@@ -498,7 +537,7 @@ const WSForm = ({ User, authStatus }) => {
 
         if(actionType === "scrape-action"){ waitTime += 1; }
 
-        else if(actionType === "btn-press"){ waitTime += (Number(actionData.wait_after) + 1); } // +1 because of button press
+        else if(actionType === "btn-press"){ waitTime += 1; } // +1 because of button press
 
         else if(actionType === "input-fill"){ waitTime += 1; }
 
@@ -515,12 +554,12 @@ const WSForm = ({ User, authStatus }) => {
 
         for(let loopIndex = (loopStart - 1); loopIndex < loopEnd; loopIndex += 1){  // no -1 at loopEnd because last number is exclusive
 
-          const workflowType = scraperInfos.all[scrapeIdx].workflow[loopIndex].type;
-          const workflowData = scraperInfos.all[scrapeIdx].workflow[loopIndex].data;
+          const workflowType = scraperInfos.all[scrapeIdx].workflow[loopIndex]?.type;
+          const workflowData = scraperInfos.all[scrapeIdx].workflow[loopIndex]?.data;
 
           if(workflowType === "scrape-action"){ oneLoopTime += 1; }
 
-          else if(workflowType === "btn-press"){ oneLoopTime += (Number(workflowData.wait_after) + 1); } // +1 because of button press
+          else if(workflowType === "btn-press"){ oneLoopTime += 1; } // +1 because of button press
 
           else if(workflowType === "input-fill"){ oneLoopTime += 1; }
 
@@ -534,16 +573,6 @@ const WSForm = ({ User, authStatus }) => {
     }
   };
 
-  const checkUserPermissions = ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) : boolean => {
-
-    if(calculateWaitTime({all: all, scrapeIdx: scrapeIdx}) > userData.subscription.max_scraper_runtime_seconds){
-      showOverlay({context: context, title: "Can't run scrape/scraper!", element: <h2 id="can-not-run-scraper" className="text-[18px] font-[400] font-inter">{"Scrape/Scraper exceeds your maximum allowed runtime. If you want to run it, please increase your maximum runtime at Profile > Subscription > max runtime."}</h2>});
-      return false;
-    };
-
-    return true;
-  };
-
   // API interaction
 
   /** Sends a POST request with scraperInfo or parts of it as the body to the API, which then runs the web-scrape-function depending on the params given in the body and
@@ -554,13 +583,11 @@ const WSForm = ({ User, authStatus }) => {
     */
   const newSubmit = async ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) : Promise<void> => {
 
-    if(!checkUserPermissions({all: all, scrapeIdx: scrapeIdx})){
-      return;
-    };
+    setScraperRunning(true);
 
-    const expectedWaitTime = calculateWaitTime({all: all, scrapeIdx: scrapeIdx})
+    const expectedWaitTime = calculateWaitTime({all: all, scrapeIdx: scrapeIdx});
 
-    showOverlay({context: context, title: "Scraped data", element: <LoadingDialog expectedWaitTime={expectedWaitTime}/>})
+    showOverlay({context: context, title: "Scraped data", element: <LoadingDialog expectedWaitTime={expectedWaitTime}/>});
 
     let runData : ScraperInfos;
 
@@ -572,22 +599,24 @@ const WSForm = ({ User, authStatus }) => {
     }
     else{
 
-      runData = {all : [scraperInfos?.all[scrapeIdx]], args : {user_email : User['email'], amount_scrapes_global : 1, global_expected_runtime: expectedWaitTime, global_undetected: false}}
+      runData = {all : [scraperInfos?.all[scrapeIdx]], args : {user_email : User['email'], amount_scrapes_global : 1, scraper_expected_runtime_seconds: expectedWaitTime, global_undetected: false}}
       runData.args.amount_scrapes_global = 1; // NO multithreading
     }
     
-    runData.args.global_expected_runtime = expectedWaitTime;
+    runData.args.scraper_expected_runtime_seconds = expectedWaitTime;
 
     const runOperation = await runScrape({apiKey: "felix12m", userId: User.id, data: runData});
-
+    
     if(!runOperation.acknowledged){
       push(`?app_error=${runOperation.errors[0]}&e_while=running%20scraper`);
+      setScraperRunning(false);
       return;
     };
 
     setScrapedData(runOperation.scraped_data);
     
-    showOverlay({context: context, title: "Scraped data", element: <ScrapedDataOverlay scrapedData={runOperation.scraped_data} saveAbility={false} />})
+    showOverlay({context: context, title: "Scraped data", element: <ScrapedDataOverlay scrapedData={runOperation.scraped_data} saveAbility={false} />});
+    setScraperRunning(false);
 
     return;
   };
@@ -597,15 +626,14 @@ const WSForm = ({ User, authStatus }) => {
       
       <WSFormSideNav
         context={context}
+        resetScrape={resetScrape}
         userData={userData}
         amountScrapes={amountScrapes}
         calculateWaitTime={calculateWaitTime}
         scraperInfos={scraperInfos}
         setScraperInfos={setScraperInfos}
-        defScraperInfos={defScraperInfos}
         readiness={readiness}
         setScrapedData={setScrapedData}
-        setReadiness={setReadiness}
         newSubmit={newSubmit}
         User={User}
         authStatus={authStatus}
@@ -613,19 +641,14 @@ const WSForm = ({ User, authStatus }) => {
         scrapedData={scrapedData}
         deleteSpecificScrape={deleteSpecificScrape}
         defScrapeData={defScrapeData}
+        scraperRunning={scraperRunning}
       />
 
       <hr id="wsform-sideNav-separator" className="w-[2px] h-[calc(100dvh-62px)] bg-gray-400 " /> 
 
-      <div id={"wsform-all-scrapes-container"} className="scraper_grid p-5 mt-5 w-full h-full max-h-[100dvh] mx-[1%] overflow-auto" >
+      <div id={"wsform-all-scrapes-container"} className="scraper_grid p-5 pb-20 mt-5 w-full h-[100%-200px] max-h-[90dvh] mx-[1%] overflow-auto" >
         {   
-          Array.from(Array(amountScrapes).keys()).map((index) => {
-
-            if(scraperInfos?.all[index] === undefined){
-              return(<></>);
-            }
-
-            return(
+          scraperInfos?.all && Array.from(Array(amountScrapes).keys()).map((index) => (
               <section key={`scrape-${index}`} id={`scrape-${index}`} className='gap-y-2 flex flex-col items-center h-min justify-between rounded-xl w-min border-[3px] bg-header-light-bg dark:bg-header-dark-bg border-purple-500 dark:border-purple-300 shadow-[0px_0px_10px_#000000] dark:shadow-[0px_0px_10px_#FFFFFF] ' > 
                 
                 <aside id={`scrape-options-container-${index}`} className="flex flex-row items-center justify-between min-w-[600px] p-2 w-full h-[70px] rounded-xl shadow-[0px_2px_2px_darkslateblue] bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg " >
@@ -650,57 +673,89 @@ const WSForm = ({ User, authStatus }) => {
 
                   <div id={`scrape-interactive-options-container-${index}`} className="c_row_elm justify-end gap-x-2" >
 
-                    {
-                      readiness[index] ? 
-                        (
-                          <Image
-                            src={"/assets/icons/scrape/rocket.svg"}
-                            id={`run-scrape-${index}`}
-                            alt={"Run scraper"}
-                            width={40}
-                            height={40}
-                            className="cursor-pointer "
-                            onClick={() => { newSubmit({all: false, scrapeIdx: index}); }}
-                          />
-                        )
-                        :
-                        (
-                          <Image
-                            src={"/assets/icons/scrape/rocket.svg"}
-                            id={`run-scrape-${index}_disabled`}
-                            alt={"Run scraper (disabled)"}
-                            width={40}
-                            height={40}
-                            className="cursor-not-allowed opacity-50"
-                          />
-                        )
-                    }
+                    <div  id={`run-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
-                    <hr className="h-[38px] w-[2px] bg-gray-400 " />
+                      <div id={`run-scrape-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                        <Tooltip yOrientation="top" content={"Run this scrape. Need to be valid!"} /> 
+                      </div>
 
-                    {
-                      amountScrapes > 1 ?
-                        (
-                          <Image id={`delete-scrape-${index}`} src='/assets/icons/scrape/trash_can.svg' onClick={() => { deleteSpecificScrape({scrapeIdx: index}); }} 
-                            width={40} height={40} alt="delete button" className="cursor-pointer" /> 
-                        )
-                        :
-                        (
-                          <Image id={`delete-scrape-${index}_disabled`} src='/assets/icons/scrape/trash_can.svg' 
-                            width={40} height={40} alt="delete button" className="opacity-50 cursor-not-allowed" />
-                        )
-                    }
+                      {
+                        !scraperRunning && readiness[index] ? 
+                          (
+                            <Image
+                              src={"/assets/icons/scrape/rocket.svg"}
+                              id={`run-scrape-${index}`}
+                              alt={"Run scraper"}
+                              width={40}
+                              height={40}
+                              className="cursor-pointer "
+                              onClick={() => { newSubmit({all: false, scrapeIdx: index}); }}
+                            />
+                          )
+                          :
+                          (
+                            <Image
+                              src={"/assets/icons/scrape/rocket.svg"}
+                              id={`run-scrape-${index}_disabled`}
+                              alt={"Run scraper (disabled)"}
+                              width={40}
+                              height={40}
+                              className="cursor-not-allowed opacity-50"
+                            />
+                          )
+                      }
 
-                    <Image id={`reset-scrape-${index}`} onClick={() => { resetScrape({scrapeIdx: index}); }} src='/assets/icons/scrape/reset.svg' 
-                      width={38} height={38} alt="reset button" className="cursor-pointer" />
+                    </div>
                     
-                    <Image 
-                      className="cursor-pointer rotate-180" width={40} height={40} 
-                      src="/assets/icons/generic/updownarrow.svg" 
-                      id={`toggle-scrape-visibility-${index}`}  
-                      alt={"show/hide form"}
-                      onClick={() => { showHideElement({elementId: `scrape-form-${index}`}); rotateElement({elementId: `toggle-scrape-visibility-${index}`, degrees: "180"}); }}
-                    />
+                    <hr className="h-[38px] w-[2px] bg-gray-400 " />
+                    
+                    <div  id={`delete-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
+
+                      <div id={`delete-scrape-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                        <Tooltip yOrientation="top" content={"Delete this scrape. Can't delete if only 1 exists!"} /> 
+                      </div>
+
+                      {
+                        amountScrapes > 1 ?
+                          (
+                            <Image id={`delete-scrape-${index}`} src='/assets/icons/scrape/trash_can.svg' onClick={() => { deleteSpecificScrape({scrapeIdx: index}); }} 
+                              width={40} height={40} alt="delete button" className="cursor-pointer" /> 
+                          )
+                          :
+                          (
+                            <Image id={`delete-scrape-${index}_disabled`} src='/assets/icons/scrape/trash_can.svg' 
+                              width={40} height={40} alt="delete button" className="opacity-50 cursor-not-allowed" />
+                          )
+                      }
+
+                    </div>
+
+                    <div  id={`reset-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
+
+                      <div id={`reset-scrape-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                        <Tooltip yOrientation="top" content={"Reset scrape."} /> 
+                      </div>
+
+                      <Image id={`reset-scrape-${index}`} onClick={() => { resetScrape({scrapeIdx: index, confirmNeeded: true}); }} src='/assets/icons/scrape/reset.svg' 
+                      width={38} height={38} alt="reset button" className="cursor-pointer" />
+
+                    </div>
+
+                    <div  id={`toggle-scrape-visibility-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
+
+                      <div id={`toggle-scrape-visibility-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                        <Tooltip yOrientation="top" content={"Toggle visibility."} /> 
+                      </div>
+
+                      <Image 
+                        className="cursor-pointer rotate-180" width={40} height={40} 
+                        src="/assets/icons/generic/updownarrow.svg" 
+                        id={`toggle-scrape-visibility-${index}`}  
+                        alt={"show/hide form"}
+                        onClick={() => { showHideElement({elementId: `scrape-form-${index}`}); rotateElement({elementId: `toggle-scrape-visibility-${index}`, degrees: "180"}); }}
+                      />
+
+                    </div>
                         
                   </div>
 
@@ -710,22 +765,113 @@ const WSForm = ({ User, authStatus }) => {
 
                   <div id={`global-params-container-${index}`} className=" flex flex-col items-center min-h-[40px] h-auto gap-y-1 w-full justify-evenly mt-1" >
 
-                    <div id={`url-param-container-${index}`} className="w-full h-[44px] flex flex-row items-center gap-x-4 px-2" >
-                      <h3 id={`url-param-heading-${index}`} className="text-[18px] font-[600] w-[70px] text-start " >URL</h3>
-                      <div  id={`url-param-wrapper-${index}`} className="relative flex flex-row items-center w-[calc(55%+142px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
-                        <input type="text"
-                          required 
-                          placeholder="https://example.com"
-                          value={scraperInfos?.all?.[index].global_params.website_url}
-                          id={`url-param-${index}`} 
-                          className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
-                          onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "website_url", value: e.target.value}); }} 
-                        />
+                    <div id={`execution-type-param-container-${index}`} className="w-full h-auto flex flex-col items-center p-2" >
 
-                        <div  id={`url-param-tooltip-container-${index}`} className="group flex items-center justify-center min-w-[30px] h-full" >
+                      <h3 id={`execution-type-param-heading-${index}`} className="w-full h-auto text-start pb-2 text-[18px] font-[500]" >
+                        Execution type <Link href="/docs#scrape-execution-type" rel="noopener noreferrer" target="_blank" className="text-[12px] underline text-blue-500" > learn more </Link>
+                      </h3>
+
+                      <div id={`execution-type-param-wrapper-${index}`} className="w-full h-auto flex flex-row items-center justify-between gap-x-4" >
+                        <div className="flex flex-row items-center px-2 border border-gray-600 rounded-md dark:border-gray-300 w-[48%] cursor-pointer relative">
+                          <input 
+                            id={`execution-type-sequential-${index}`}
+                            defaultChecked
+                            type="radio" 
+                            value="" 
+                            name={`execution-type-${index}`} 
+                            className="focus:outline-none w-8 h-8 cursor-pointer"
+                            onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "exec_type", value: "sequential"}); }}
+                          />
+                          <label htmlFor={`execution-type-sequential-${index}`} className="w-full py-2 text-[16px] font-[600] cursor-pointer">
+                            Sequential
+                            <div  id={`execution-type-sequential-tooltip-container-${index}`} className="group absolute right-1 -top-[5px] flex items-center justify-center min-w-[30px] h-full mt-[6px]" >
+
+                              <div id={`execution-type-sequential-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                                <Tooltip yOrientation="bottom" content={"This will execute all actions sequentially for every provided URL, meaning every action will be executed for every URL."} /> 
+                              </div>
+
+                              <Image id={`execution-type-sequential-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
+
+                            </div>
+                          </label>
+                        </div>
+
+                        <div className="flex flex-row items-center px-2 border border-gray-600 rounded-md dark:border-gray-300 w-[48%] relative">
+                          <input 
+                            id={`execution-type-looping-${index}`} 
+                            type="radio"
+                            value=""
+                            name={`execution-type-${index}`} 
+                            className="focus:outline-none w-8 h-8 cursor-pointer"
+                            onChange={(e) => { deleteLoop({scrapeIdx : index}); handleGlobalParamChange({scrapeIdx: index, paramName: "exec_type", value: "looping"}); }}
+                          />
+                          <label htmlFor={`execution-type-looping-${index}`} className="w-full py-2 text-[16px] font-[600] cursor-pointer">
+                            Looping
+                            <div  id={`execution-type-looping-tooltip-container-${index}`} className="group absolute right-1 -top-[5px] flex items-center justify-center min-w-[30px] h-full mt-[6px]" >
+
+                              <div id={`execution-type-looping-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
+                                <Tooltip yOrientation="bottom" content={"This will execute all actions in a looping manner, meaning the first action will be executed for every URL."} /> 
+                              </div>
+
+                              <Image id={`execution-type-looping-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
+
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <hr id={`global-params-execType/url-separator-${index}`} className="w-[98%] h-[2px] my-1 bg-black " />
+
+                    <div id={`url-param-container-${index}`} className="w-full min-h-[44px] h-auto flex flex-row items-start gap-x-4 px-2" >
+                      <h3 id={`url-param-heading-${index}`} className="text-[18px] font-[600] w-[70px] text-start " >URL</h3>
+                      <div  id={`url-param-wrapper-${index}`} className="relative flex flex-row items-start w-[calc(60%+142px)] min-h-[40px] h-max rounded-xl bg-purple-400 dark:bg-purple-300 " >
+
+                        {
+                          scraperInfos?.all[index].scrape_params.url_as !== "text" ?
+                            (
+                              <textarea
+                                required 
+                                placeholder="https://example.com"
+                                value={scraperInfos?.all[index].scrape_params.website_url}
+                                id={`url-param-${index}`} 
+                                className='text-[16px] px-2 min-h-[34px] h-fit py-1 break-words focus:outline-none text-start m-[3px] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark w-[92%]'
+                                onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "website_url", value: e.target.value}); }} 
+                              />
+                            )
+                            :
+                            (
+                              <input type="text"
+                                required 
+                                placeholder="https://example.com"
+                                value={scraperInfos?.all[index].scrape_params.website_url}
+                                id={`url-param-${index}`} 
+                                className='text-[16px] pl-2 min-h-[34px] h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
+                                onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "website_url", value: e.target.value}); }} 
+                              />
+                            )
+                        }
+                        
+                        <ChangeDataInterpretationDropdown
+                          thingToClick={
+                            <Image
+                              id={`url-data-types-icon-${index}`}
+                              alt="url data type options"
+                              src={"/assets/icons/generic/3_dots.svg"}
+                              className="cursor-pointer"
+                              height={30}
+                              width={30}
+                            />
+                          }
+                          scrapeIdx={index}
+                          handleTypeSelection={handleUrlTypeChange}
+                          options={[{name : "As TEXT", id: "text"}, {name : "As CSV", id: "csv"}, {name : "As JSON-array", id: "json"}]}
+                        />
+                        <div  id={`url-param-tooltip-container-${index}`} className="group flex items-center justify-center min-w-[30px] h-full mt-[6px]" >
 
                           <div id={`url-param-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
-                            <Tooltip content={"Any valid URL. Must be https."} /> 
+                            <Tooltip yOrientation="bottom" content={"Any valid URL. Must be https."} /> 
                           </div>
 
                           <Image id={`url-param-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
@@ -734,52 +880,37 @@ const WSForm = ({ User, authStatus }) => {
                       </div>
                     </div>
 
-                    <div id={`browser-and-wait-param-container-${index}`} className="w-full h-[44px] flex flex-row items-center gap-x-4 px-2" >
+                    <div id={`browser-param-container-${index}`} className="w-full ml-1 h-[44px] flex flex-row items-center gap-x-4 px-2" >
 
                       <h3 id={`browser-param-heading-${index}`} className="text-[18px] font-[600] w-[70px] text-start" >Browser</h3>
-                      <div id={`browser-param-wrapper-${index}`} className="relative flex flex-row items-center w-[calc(30%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
-                        <input type="text" 
-                          className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
-                          required 
-                          placeholder="Browser"
-                          value={scraperInfos?.all?.[index].global_params.browser_type}
-                          id={`browser-param-${index}`}
-                          onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "browser_type", value: e.target.value}); }} 
-                        />
 
-                        <div id={`browser-param-tooltip-container-${index}`} className="group flex items-center justify-center min-w-[30px] h-full" >
+                      <div id={`browser-param-wrapper-${index}`} className="relative flex flex-row items-center justify-between w-full h-[40px] gap-x-4" >
 
-                          <div id={`browser-param-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
-                            <Tooltip content={"Can be 'chrome', 'safari', 'edge' or 'firefox'."} /> 
-                          </div>
+                        {
+                          ["edge", "chrome", "firefox", "safari"].map((browserType) => (
 
-                          <Image id={`browser-param-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
+                            <div className="flex flex-row items-center px-1 border border-gray-600 rounded-md dark:border-gray-300 w-[18%] cursor-pointer relative">
+                              <input 
+                                id={`browser-${browserType}-${index}`}
+                                defaultChecked={browserType === "edge"}
+                                type="radio" 
+                                value="" 
+                                name={`browser-param-${index}`} 
+                                className="focus:outline-none w-8 h-8 cursor-pointer"
+                                onChange={() => { handleGlobalParamChange({scrapeIdx: index, paramName: "browser_type", value: browserType}); }}
+                              />
+                              <label htmlFor={`browser-${browserType}-${index}`} className="w-full py-1 text-[16px] font-[500] cursor-pointer">
+                                {browserType}
+                              </label>
+                            </div>
 
-                        </div>
+                          ))
+                        }
+
                       </div>
 
-                      <h3 id={`wait-param-heading-${index}`} className="text-[18px] font-[600] w-[80px] text-start ml-[7%]" >load time</h3>
-                      <div id={`wait-param-wrapper-${index}`} className="relative flex flex-row items-center w-[calc(18%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
-                        <input type="number" 
-                          min={5}
-                          className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
-                          required 
-                          value={scraperInfos?.all?.[index].global_params.wait_time}
-                          id={`wait-param-${index}`} 
-                          onChange={(e) => { handleGlobalParamChange({scrapeIdx: index, paramName: "wait_time", value: Number(e.target.value)}); }} 
-                        />
-
-                        <div id={`wait-param-tooltip-container-${index}`} className="group flex items-center justify-center min-w-[30px] h-full" >
-
-                          <div id={`wait-param-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
-                            <Tooltip content={"Enter a valid integer between 0-25."} /> 
-                          </div>
-
-                          <Image id={`wait-param-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
-
-                        </div>
-                      </div>
                     </div>
+
                   </div>
 
                   <hr id={`global-params-actions-separator-${index}`} className="w-[98%] h-[2px] bg-black " />
@@ -827,46 +958,35 @@ const WSForm = ({ User, authStatus }) => {
                         </button>
 
                         {
-                          scraperInfos?.all[index].loop.created === false ?
+                          !scraperInfos?.all[index].loop.created ?
 
                             (
-                              <button id={`create-loop-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" 
+                              <button disabled={scraperInfos?.all[index].scrape_params.exec_type === "looping"} id={`create-loop-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" 
                                 onClick={(e) => { e.preventDefault(); createLoop({scrapeIdx: index}); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }} >
                                 + Loop
                               </button>
                             )
                             :
                             (
-                              <button id={`toggle-loop-visibility-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" 
+                              <button id={`toggle-loop-visibility-${index}`} className="row_options_button flex flex-row gap-x-2 bg-purple-500 dark:bg-purple-700" 
                                 onClick={(e) => { e.preventDefault(); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }}  >
-                                {
-                                  isElementVisible({elementId: `loop-container-${index}`}) ? 
-                                    (
-                                      "Show loop"
-                                    )
-                                    :
-                                    (
-                                      "Hide loop"
-                                    )
-                                }
+                                <Image
+                                  src={"/assets/icons/generic/view.svg"}
+                                  alt={"Show/hide loop"}
+                                  width={24}
+                                  height={24}
+                                  id="toggle-loop-visibility-clue"
+                                />
+                                Loop
                               </button>
                             )
                         }
 
-                        <button id={`toggle-workflow-container-visibility-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700 min-w-[80px] " 
-                          onClick={(e) => { e.preventDefault(); showHideElement({elementId: `workflow-container-${index}`}); }} >
-                          {
-                            // So that the button switches text depending on workflow-container-visibility
-                            isElementVisible({elementId: `workflow-container-${index}`}) ? 
-                              ( "Show WF" ) : ( "Hide WF" )
-                          }
-                        </button>
-
                     </div>
 
-                    <div id={`actions-container-${index}`} className="rows_grid w-auto h-auto gap-y-1 p-2 " >
+                    <div id={`actions-container-${index}`} className="rows_grid w-full h-auto gap-y-1 p-2 " >
                       {
-                        scraperInfos?.all?.[index] !== undefined &&
+                        scraperInfos?.all?.[index] &&
                           (
                             <>
                               { 
@@ -874,18 +994,21 @@ const WSForm = ({ User, authStatus }) => {
                                 Array.from(scraperInfos?.all[index].workflow.keys()).map((rowIndex) => {
 
                                   return (
-                                    <div id={`action-${rowIndex}`} className="relative flex flex-row items-center justify-start pr-2 " key={`workflow-action-${rowIndex}`} >
+                                    <div id={`action-${rowIndex}`} className="w-full h-auto" key={`workflow-action-${rowIndex}`} onDragOver={(e) => { e.preventDefault(); }} onDrop={(e) => {e.preventDefault(); let dropIdx = e.dataTransfer.getData("droppedWorkflowIndex"); handleDrop({scrapeIdx: index, localIndex: rowIndex, dropIndex: Number(dropIdx)});}} >
+                                      <div id={`action-drag-wrapper-${rowIndex}`} className="relative flex flex-row items-start justify-start pr-2 w-full" draggable onDragStart={(e) => { e.dataTransfer.setData("droppedWorkflowIndex", String(rowIndex));}} >
 
-                                      <h4 id={`action-heading-${rowIndex}`} className="text-start text-[14px] font-[Helvetica] font-[600] object-contain max-h-[40px] min-w-[80px] max-w-[80px] break-words pr-2" > {`${(Number(rowIndex) + 1)}: ${(scraperInfos?.all[index].workflow[rowIndex].type.at(0).toUpperCase() + scraperInfos?.all[index].workflow[rowIndex].type.slice(1))}`} </h4>
+                                        <h4 id={`action-heading-${rowIndex}`} className="text-start text-[14px] font-[Helvetica] font-[600] object-contain max-h-[40px] min-w-[80px] max-w-[80px] break-words pr-2" > {`${(Number(rowIndex) + 1)}: ${(scraperInfos?.all[index].workflow[rowIndex].type.at(0).toUpperCase() + scraperInfos?.all[index].workflow[rowIndex].type.slice(1))}`} </h4>
 
-                                      <WorkflowAction 
-                                        handleChange={handleWorkflowChange} 
-                                        scraperInfos={scraperInfos} 
-                                        removeSpecificWorkflow={removeSpecificWorkflow}
-                                        type={scraperInfos?.all[index].workflow[rowIndex].type}
-                                        scrapeIdx={index} 
-                                        rowIndex={Number(rowIndex)}  />
-                                    
+                                        <WorkflowAction
+                                          handleChange={handleWorkflowChange} 
+                                          scraperInfos={scraperInfos}
+                                          setScraperInfos={setScraperInfos}
+                                          removeSpecificWorkflow={removeSpecificWorkflow}
+                                          type={scraperInfos?.all[index].workflow[rowIndex].type}
+                                          scrapeIdx={index} 
+                                          rowIndex={Number(rowIndex)}  
+                                        />
+                                      </div>
                                     </div>
                                   )
                                 })
@@ -898,7 +1021,7 @@ const WSForm = ({ User, authStatus }) => {
 
                   <hr id={`actions-loop-separator-${index}`} className="bg-black w-[98%] h-[2px] hidden " />
 
-                  <div id={`loop-container-${index}`} className={" hidden w-[90%] h-fit flex flex-col gap-y-2 my-3 items-center relative justify-start p-2 shadow-lg rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg border-gray-600 dark:border-gray-300 border-2  "} >
+                  <div id={`loop-container-${index}`} className={" hidden w-[90%] h-fit flex flex-col gap-y-2 my-3 items-center relative justify-start p-2 shadow-lg rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg border-gray-600 dark:border-gray-300 border-2"} >
 
                       <h3 id="loop-heading" className="text-[20px] font-[600] " >
                         {"Please, define your loop here:"}
@@ -997,34 +1120,10 @@ const WSForm = ({ User, authStatus }) => {
                     
                   </div>
 
-                  <div id={`workflow-container-${index}`} className="hidden p-3 border-[black] border-2 rounded-md min-h-[40px] h-auto w-full mt-8" >
-
-                    <div id={`workflow-content-wrapper-${index}`} className="workflow_grid" >
-
-                      {
-                        Array.from(scraperInfos?.all[index].workflow.keys()).map((workflowIndex) => {
-
-                          return (
-
-                              <WorkflowElement
-                                key={workflowIndex} 
-                                scraperInfos={scraperInfos}
-                                removeSpecificWorkflow={removeSpecificWorkflow}
-                                setScrapeInfos={setScraperInfos} 
-                                scrapeIdx={index} 
-                                workflowIndex={Number(workflowIndex)}
-                              />
-
-                          );
-                        })
-                      }
-                    </div>
-                  </div>
                 </form>
               </section>
-            );
-
-          })
+            
+          ))
         }
       </div>
 

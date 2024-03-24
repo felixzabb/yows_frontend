@@ -3,6 +3,7 @@ import { SetStateAction } from "react";
 type BasicApiReturn = {
   acknowledged : 0 | 1
   errors? : string[]
+  specific_error? : string
 };
 
 // ScraperInfos
@@ -15,13 +16,13 @@ type ScraperInfos = {
 type ScraperArgs = {
   user_email : string
   amount_scrapes_global : number
-  global_expected_runtime : number
+  scraper_expected_runtime_seconds : number
   global_undetected : boolean
 };
 
 type ScrapeData = {
   workflow : WorkflowData[]
-  global_params : ScrapeParams
+  scrape_params : ScrapeParams
   loop : LoopData
 };
 
@@ -32,9 +33,10 @@ type WorkflowData = {
 
 type ScrapeParams = {
   website_url : string
-  wait_time : number
+  url_as : "text" | "json" | "csv"
   browser_type : string
   amount_actions_local : number
+  exec_type : "sequential" | "looping"
 };
 
 type LoopData = {
@@ -48,6 +50,10 @@ type ScrapedData = [
   {scrape_runs: string[][]}
 ];
 
+type PossibleCssSelectorDataTypes = "json" | "text" | "csv";
+
+type PossibleUrlDataTypes = "json" | "text" | "csv";
+ 
 // DB
 
 type SavedScraper = {
@@ -86,7 +92,21 @@ type UserSubscriptionData = {
   subscribed_months : 0
 }
 
-// API calls
+// API call OUT
+
+type CreateUserSend =  { 
+  provider: string
+  scheme : "default" | string
+  user_data : {
+    email: string 
+    password?: string 
+    alias?: string
+    scheme?: string
+    image?: string
+  }
+};
+
+// API call IN
 
 type PostToDbReturn = BasicApiReturn & {
   created_ids? : string[]
@@ -127,12 +147,16 @@ type CreateUserReturn = PostToDbReturnData & SessionUserData;
 type GenerateApiKeyReturn = BasicApiReturn & PostToDbReturnData & PutToDbReturnData;
 
 type CheckUserValidReturn = BasicApiReturn & {
-  user : {
+  user? : {
     _id : string
     email : string
     alias : string
     image : string
-  } 
+  }[] 
+};
+
+type PingServerReturn = BasicApiReturn & {
+  status? : "ok" | "bad"
 };
 
 // Auth

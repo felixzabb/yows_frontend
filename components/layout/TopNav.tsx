@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import { useSession } from "next-auth/react";
-import Dropdown from "../design/Dropdown";
+import NavDropdown from "../dropdowns/NavDropdown";
 import { useState, useEffect } from "react";
 
 
@@ -25,12 +25,9 @@ const TopNav = () => {
 			setColorMode("dark");
 			return;
 		};
-
-		console.log(window.document.getElementById("html-elm").classList)
 		window.localStorage.setItem("colorMode", "light")
 		window.document.getElementById("html-elm").classList.remove("dark");
 		setColorMode("light");
-
 	};
 	
   return(
@@ -65,7 +62,10 @@ const TopNav = () => {
 								Saved 
 							</Link>
 
-							<Dropdown dropDownName="Help" options={{ errors : {name : "Errors", href: "/errors"}, docs : {name : "Docs", href:"/docs"}}} />
+							<NavDropdown 
+								thingToClick={<span className="text-[20px] font-[Helvetica] font-[500] px-2 py-[6px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark " >Help</span>}
+								options={[{name : "Errors", href: "/errors"}, {name : "Docs", href:"/docs"}]}
+							/>
 
 							<hr id="topNav-options-separator-0" className="h-[40px] w-[2px] bg-gray-400 " />
 

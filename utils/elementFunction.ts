@@ -35,8 +35,10 @@ export const rotateElement = ({elementId, degrees} : {elementId : string, degree
   return;
 };
 
-export const inputElementValue = ({elementId} : {elementId : string}) : string => {
+export const inputElementValue = ({elementId, defaultValue} : {elementId : string, defaultValue? : boolean}) : string => {
   const inputElement = window.document.getElementById(elementId) as HTMLInputElement | HTMLTextAreaElement;
+  if(!inputElement){ return null; };
+  if(defaultValue){ return inputElement.defaultValue; };
   return inputElement.value;
 };
 

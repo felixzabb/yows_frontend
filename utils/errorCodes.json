@@ -8,6 +8,15 @@
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!",
         "message" : "The server is not available right now, please try again later."
       }
+    },
+    "OS" : {
+      "1" : {
+        "type" : "server-side",
+        "tags" : ["server-side", "server-os"],
+        "desc" : "Server seems to be running the wrong OS.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!",
+        "message" : "The server is not available right now, please try again later."
+      }
     }
   },
   "AUTH" : {
@@ -65,6 +74,12 @@
         "tags" : ["server-side", "database"],
         "desc" : "Failed to connect to db (server-side).",
         "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
+      },
+      "2" : {
+        "type" : "server-side",
+        "tags" : ["server-side", "database"],
+        "desc" : "DB server-selection timed out.",
+        "possibleFix" : "No fix possible, because this is a server-side error. I'm working on it!"
       }
     },
     "POST" : {
@@ -112,6 +127,30 @@
         "tags" : ["client-side", "bad-request"],
         "desc" : "You had more than 10 scrapes in your scraper. 10 is the maximum.",
         "possibleFix" : "Have a maximum of 10 scrapes in your scraper."
+      },
+      "2" : {
+        "type" : "client-side",
+        "tags" : ["client-side", "bad-request"],
+        "desc" : "The expected runtime of your scraper exceeds your allowed runtime.",
+        "possibleFix" : "lower your scrapers runtime or increase your allowed runtime."
+      }
+    },
+    "TIMEOUT" : {
+      "1" : {
+        "type" : "client-side/server-side",
+        "tags" : ["client-side", "server-side", "timeout"],
+        "desc" : "A action like e. g. loading a page timed out. In this case it could be, because the url is wrong.",
+        "possibleFix" : "Try to check your url and other actions."
+      }
+    }
+  },
+  "UNKNOWN" : {
+    "UNKNOWN" : {
+      "1" : {
+        "type" : "unknown",
+        "tags" : ["unknown-error"],
+        "desc" : "A unknown error. If any occur, they will be added to this page",
+        "possibleFix" : "None!"
       }
     }
   }

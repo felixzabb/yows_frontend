@@ -59,7 +59,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
           <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
             <div className=" h-auto w-auto hidden group-hover:flex " >
-              <Tooltip xOrientation='right' yOrientation="bottom" content={"Copy ALL"} /> 
+              <Tooltip xOrientation='left' yOrientation="top" content={"Copy ALL"} /> 
             </div>
 
             <Image
@@ -77,7 +77,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
           <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
             <div className=" h-auto w-auto hidden group-hover:flex " >
-              <Tooltip xOrientation='right' yOrientation="bottom" content={"Download ALL"} /> 
+              <Tooltip xOrientation='left' yOrientation="top" content={"Download ALL"} /> 
             </div>
 
             <Image
@@ -101,7 +101,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
                 <div className="relative group flex items-center justify-center min-w-[30px] h-full mb-[-2px]" >
 
                   <div className=" h-auto w-auto hidden group-hover:flex " >
-                    <Tooltip xOrientation='right' yOrientation="bottom" content={"Save scraped data."} /> 
+                    <Tooltip xOrientation='right' yOrientation="top" content={"Save scraped data."} /> 
                   </div>
 
                   <Image
@@ -143,7 +143,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
                     <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
                       <div className=" h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip xOrientation='left' yOrientation='top' content={"Copy current scrape"} /> 
+                        <Tooltip xOrientation='right' yOrientation='bottom' content={"Copy current scrape"} /> 
                       </div>
 
                       <Image
@@ -161,7 +161,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
                     <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
                       <div className="h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip yOrientation='top' content={"Download current scrape"} /> 
+                        <Tooltip xOrientation='right' yOrientation='bottom' content={"Download current scrape"} /> 
                       </div>
 
                       <Image
@@ -181,7 +181,7 @@ const ScrapedDataOverlay = ({saveAbility, currentScrapeId, currentScrapeIndex, u
                     <div className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
                       <div className="h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip content={"Toggle visibility"} /> 
+                        <Tooltip xOrientation='right' yOrientation='bottom' content={"Toggle visibility"} /> 
                       </div>
 
                       <Image 

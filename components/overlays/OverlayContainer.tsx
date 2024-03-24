@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useState } from "react";
 import { appContext } from "@app/layout";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ErrorDialog from "./ErrorDialog";
 import { CustomAppContext } from "@custom-types";
 import { hideElement } from "@utils/elementFunction";
@@ -11,20 +11,30 @@ const OverlayContainer = () => {
 
   const context : CustomAppContext = useContext(appContext);
   const urlQueryParams = useSearchParams();
+  const pathName = usePathname()
   const { push } = useRouter();
 
   const [ overlay, setOverlay ] = useState({element: <></>, title: ""});
+  const [borderColor, setBorderColor ] = useState({
+    dark: "border-gray-300",
+    light: "border-gray-600"
+  });
 
   const closeOverlay = () : void => {
+    setBorderColor((prevBorderColor) => ({
+      ...prevBorderColor,
+      dark: "border-gray-300",
+      light: "border-gray-600"
+    }));
 
-    /**
-     * if(urlQueryParams.has("app_error")){
-      
-    }
-     */
-    push("?")
+    push(`?${window.location.hash}`);
     hideElement({elementId: "document-overlay-container"});
   };
+
+  useEffect(() => {
+    closeOverlay();
+  }, [pathName])
+
 
   useEffect(() => {
  
@@ -35,7 +45,14 @@ const OverlayContainer = () => {
       const overlayContainer = window.document.getElementById("document-overlay-container")
       if(overlayContainer){ 
 
+
         setOverlay({element: <ErrorDialog errorCode={possibleError} occurredWhile={errorOccurredWhile} />, title: "An error occurred!"});
+        setBorderColor((prevBorderColor) => ({
+          ...prevBorderColor,
+          dark: "border-red-800",
+          light: "border-red-800"
+
+        }));
         overlayContainer.classList.remove("hidden");
       };
     };
@@ -49,8 +66,8 @@ const OverlayContainer = () => {
   }, [context]);
 
   return (
-    <section id="document-overlay-container" className=' hidden z-[1000] flex flex-col items-center pt-[10dvh] fixed w-[100dvw] h-[100dvh] top-0 left-0 backdrop-blur-sm ' >
-      <div id="overlay-content-container" className=' gap-y-2 min-w-[45dvw] w-max max-w-[95dvw] h-max max-h-[80dvh] overflow-hidden border-2 dark:border-gray-300 border-gray-600 bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg flex flex-col items-center p-2 rounded-xl ' >
+    <section id="document-overlay-container" className={` hidden z-[1000] flex flex-col items-center pt-[100px] fixed w-[100dvw] h-[100dvh] top-0 left-0 backdrop-blur-sm `} >
+      <div id="overlay-content-container" className={` gap-y-2 min-w-[45dvw] w-max max-w-[95dvw] h-max max-h-[80dvh] overflow-hidden border-2 dark:${borderColor.dark} ${borderColor.light} bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg flex flex-col items-center p-2 rounded-xl `} >
 
         <div id="overlay-general-options-container" className= 'w-full h-auto flex flex-row items-center justify-between' >
 

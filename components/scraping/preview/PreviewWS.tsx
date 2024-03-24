@@ -75,7 +75,7 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                       <input readOnly type="text"
                         required 
                         placeholder="https://example.com"
-                        value={previewData.all[index].global_params.website_url}
+                        value={previewData.all[index].scrape_params.website_url}
                         id={`url-param-${index}`} 
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                       />
@@ -96,7 +96,7 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                         className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
                         required 
                         placeholder="Browser"
-                        value={previewData.all[index].global_params.browser_type}
+                        value={previewData.all[index].scrape_params.browser_type}
                         id={`browser-param-${index}`}
                       />
 
@@ -107,22 +107,6 @@ const WSForm =  ({previewData} : {previewData : ScraperInfos}) => {
                       </div>
                     </div>
 
-                    <h3 id={`wait-param-heading-${index}`} className="text-[18px] font-[600] w-[80px] text-start ml-[7%]" >load time</h3>
-                    <div id={`wait-param-wrapper-${index}`} className="relative flex flex-row items-center w-[calc(12%+12px)] h-[40px] rounded-xl bg-purple-400 dark:bg-purple-300 mr-[6px] " >
-                      <input readOnly type="number" 
-                        min={5}
-                        className='text-[16px] pl-2 h-[calc(100%-6px)] w-[calc(100%-32px)] focus:outline-none text-start pr-2 m-[3px] autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s] rounded-lg bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg placeholder:text-text-color-light dark:placeholder:text-text-color-dark' 
-                        required 
-                        value={previewData.all[index].global_params.wait_time}
-                        id={`wait-param-${index}`} 
-                      />
-
-                      <div id={`wait-param-tooltip-container-${index}`} className="group flex items-center justify-center min-w-[30px] h-full" >
-
-                        <Image id={`wait-param-tooltip-toggle-${index}`} src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} />
-
-                      </div>
-                    </div>
                   </div>
                 </div>
 

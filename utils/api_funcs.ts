@@ -1,23 +1,20 @@
-import { PostToDbReturn, PullFromDbReturn, PutToDbReturn, RunScrapeReturnData, GenerateApiKeyReturn, DeleteUserReturn, CreateUserReturn, SaveScraperReturn, DeleteFromDbReturn, SavedScraper, BasicApiReturn, CheckUserValidReturn, ScraperInfos } from "@custom-types";
+import { PostToDbReturn, PullFromDbReturn, PutToDbReturn, RunScrapeReturnData, GenerateApiKeyReturn, DeleteUserReturn, CreateUserReturn, SaveScraperReturn, DeleteFromDbReturn, SavedScraper, BasicApiReturn, CheckUserValidReturn, ScraperInfos, CreateUserSend, PingServerReturn } from "@custom-types";
 import mongoose from "mongoose";
 
 const handleReturnData = async <dataType>({res} : {res : Response}) => {
 
   let resData : BasicApiReturn;
 
-  if (!res.ok) {
-    if (res.status === 500) {
-      resData = { acknowledged: 0, errors: ["SERVER-FUNCTION-1"] };
-    }
-    else {
-      const parsed = await res.json()
-      resData = parsed.detail;
-    };
+  const parsed = await res?.json()
+  if(parsed.detail){
+    resData = parsed.detail;
   }
-  else {
-    resData = await res.json()
+  else if(res.status === 500) {
+    resData = { acknowledged: 0, errors: ["SERVER-FUNCTION-1"] };
   }
-
+  else{
+    resData = parsed;
+  }
   return resData as dataType;
 };
 
@@ -57,13 +54,18 @@ export const postToDb = async ({ apiKey, dbName, collectionName, data, checkDupl
     collection_name: collectionName,
     check_dupe: String(checkDuplicates),
   });
-
-  const res: Response = await fetch(postUrl, {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-
-  return await handleReturnData<PostToDbReturn>({res: res});
+  try{
+    const res: Response = await fetch(postUrl, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  
+    return await handleReturnData<PostToDbReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const pullFromDb = async <pullType>({ apiKey, dbName, collectionName, data }: { apiKey: string, dbName: string, collectionName: string, data: { filter: object, projection: object | string[] } }): Promise<PullFromDbReturn<pullType>> => {
@@ -76,11 +78,17 @@ export const pullFromDb = async <pullType>({ apiKey, dbName, collectionName, dat
     data: JSON.stringify(data),
   });
 
-  const res: Response = await fetch(pullUrl, {
-    method: "GET"
-  });
-
-  return await handleReturnData<PullFromDbReturn<pullType>>({res: res});
+  try{
+    const res: Response = await fetch(pullUrl, {
+      method: "GET"
+    });
+  
+    return await handleReturnData<PullFromDbReturn<pullType>>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const putToDb = async ({ apiKey, dbName, collectionName, data }: { apiKey: string, dbName: string, collectionName: string, data: { filter: object, update: object } }): Promise<PutToDbReturn> => {
@@ -92,12 +100,17 @@ export const putToDb = async ({ apiKey, dbName, collectionName, data }: { apiKey
     collection_name: collectionName,
   });
 
-  const res: Response = await fetch(putUrl, {
-    method: "PUT", body: JSON.stringify(data)
-  });
-
-  return await handleReturnData<PutToDbReturn>({res: res});
-
+  try{
+    const res: Response = await fetch(putUrl, {
+      method: "PUT", body: JSON.stringify(data)
+    });
+  
+    return await handleReturnData<PutToDbReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const saveScraper = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: object[] }): Promise<SaveScraperReturn> => {
@@ -106,13 +119,18 @@ export const saveScraper = async ({ apiKey, userId, data }: { apiKey: string, us
     api_key: apiKey,
     uid: userId,
   });
-
-  const res: Response = await fetch(saveScrapeUrl, {
-    method: "PUT",
-    body: JSON.stringify(data)
-  });
-
-  return await handleReturnData<SaveScraperReturn>({res: res});
+  try{
+    const res: Response = await fetch(saveScrapeUrl, {
+      method: "PUT",
+      body: JSON.stringify(data)
+    });
+  
+    return await handleReturnData<SaveScraperReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const runScrape = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: ScraperInfos }): Promise<RunScrapeReturnData> => {
@@ -122,13 +140,19 @@ export const runScrape = async ({ apiKey, userId, data }: { apiKey: string, user
     uid: userId,
   });
 
-  const res: Response = await fetch(runScrapeUrl, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-
-  return await handleReturnData<RunScrapeReturnData>({res: res});
-}
+  try{
+    const res: Response = await fetch(runScrapeUrl, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  
+    return await handleReturnData<RunScrapeReturnData>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
+};
 
 export const deleteScrape = async ({ apiKey, scrapeId, userId }: { apiKey: string, scrapeId: string, userId: string }): Promise<DeleteFromDbReturn> => {
 
@@ -137,12 +161,17 @@ export const deleteScrape = async ({ apiKey, scrapeId, userId }: { apiKey: strin
     scrape_id: scrapeId,
     uid: userId,
   });
-
-  const res: Response = await fetch(deleteScrapeUrl, {
-    method: "DELETE",
-  });
-
-  return await handleReturnData<DeleteFromDbReturn>({res: res});
+  try{
+    const res: Response = await fetch(deleteScrapeUrl, {
+      method: "DELETE",
+    });
+  
+    return await handleReturnData<DeleteFromDbReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const pullSavedScrapes = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<PullFromDbReturn<SavedScraper>> => {
@@ -153,12 +182,18 @@ export const pullSavedScrapes = async ({ apiKey, userId }: { apiKey: string, use
       uid: userId
     }
   );
-
-  const res: Response = await fetch(getSavedScrapesUrl, {
-    method: 'GET',
-  });
-
-  return await handleReturnData<PullFromDbReturn<SavedScraper>>({res: res});
+  
+  try{
+    const res: Response = await fetch(getSavedScrapesUrl, {
+      method: 'GET',
+    });
+  
+    return await handleReturnData<PullFromDbReturn<SavedScraper>>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const changePassword = async ({ apiKey, userId, password }: { apiKey: string, userId: string, password: string }): Promise<PutToDbReturn> => {
@@ -171,11 +206,17 @@ export const changePassword = async ({ apiKey, userId, password }: { apiKey: str
     }
   );
 
-  const res: Response = await fetch(changePasswordUrl, {
-    method: 'PUT',
-  });
-
-  return await handleReturnData<PutToDbReturn>({res: res});
+  try{
+    const res: Response = await fetch(changePasswordUrl, {
+      method: 'PUT',
+    });
+  
+    return await handleReturnData<PutToDbReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const generateApiKey = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<GenerateApiKeyReturn> => {
@@ -186,12 +227,18 @@ export const generateApiKey = async ({ apiKey, userId }: { apiKey: string, userI
       uid: userId
     }
   );
-
-  const res: Response = await fetch(generateKeyUrl, {
-    method: 'POST',
-  });
-
-  return await handleReturnData<GenerateApiKeyReturn>({res: res});
+  
+  try{
+    const res: Response = await fetch(generateKeyUrl, {
+      method: 'POST',
+    });
+  
+    return await handleReturnData<GenerateApiKeyReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const deleteUser = async ({ apiKey, userId }: { apiKey: string, userId: string }): Promise<DeleteUserReturn> => {
@@ -203,11 +250,17 @@ export const deleteUser = async ({ apiKey, userId }: { apiKey: string, userId: s
     }
   );
 
-  const res: Response = await fetch(deleteUserUrl, {
-    method: 'DELETE',
-  });
-
-  return await handleReturnData<DeleteUserReturn>({res: res});
+  try{
+    const res: Response = await fetch(deleteUserUrl, {
+      method: 'DELETE',
+    });
+  
+    return await handleReturnData<DeleteUserReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const CreateUser = async ({ apiKey, provider, email, password, alias, scheme, image }: { apiKey: string, provider: string, email: string, password?: string, alias?: string, scheme?: string, image?: string }): Promise<CreateUserReturn> => {
@@ -218,22 +271,27 @@ export const CreateUser = async ({ apiKey, provider, email, password, alias, sch
     }
   );
 
-  const payload: { provider: string, email: string, password?: string, alias?: string, scheme?: string, image?: string } = { provider: provider, email: email, scheme: scheme };
+  const payload : CreateUserSend = { provider: provider, user_data : {email: email}, scheme: scheme };
 
   if (provider === "credentials") {
-    payload.password = password;
-    payload.alias = alias;
+    payload.user_data.password = password;
+    payload.user_data.alias = alias;
   };
   if (provider === "google") {
-    payload.image = image;
+    payload.user_data.image = image;
   };
 
-  const res: Response = await fetch(createUserUrl, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-
-  return await handleReturnData<CreateUserReturn>({res: res});
+  try{
+    const res: Response = await fetch(createUserUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return await handleReturnData<CreateUserReturn>({res: res});  
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
 export const checkUserLoginValid = async ({ apiKey, email, password }: { apiKey: string, email: string, password: string }) : Promise<CheckUserValidReturn> => {
@@ -246,10 +304,36 @@ export const checkUserLoginValid = async ({ apiKey, email, password }: { apiKey:
     }
   );
 
-  const res: Response = await fetch(checkUserUrl, {
-    method: 'GET',
-  });
-
-  return await handleReturnData<CheckUserValidReturn>({res: res});
+  try{
+    const res: Response = await fetch(checkUserUrl, {
+      method: 'GET',
+    });
+    return await handleReturnData<CheckUserValidReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
 };
 
+export const pingServer = async ({apiKey, check_db} : {apiKey : string, check_db? : boolean}) : Promise<PingServerReturn> => {
+
+  const pingServerUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/server/ping?" + new URLSearchParams(
+    {
+      api_key: apiKey,
+      db: check_db ? ("1") : ("0")
+    }
+  );
+
+  try{
+    const res: Response = await fetch(pingServerUrl, {
+      method: 'GET',
+    });
+    return await handleReturnData<PingServerReturn>({res: res});
+  }
+  catch(error){
+    console.log(error.message);
+    return {acknowledged: 0, errors: ["SERVER-FUNCTION-1"]};
+  };
+
+};

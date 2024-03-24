@@ -23,13 +23,8 @@
 }
 
 input{
-  @apply autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s];
+  @apply focus:outline-none;
 }
-
-textarea{
-  @apply autofill:delay-[9999s] focus:delay-[9999s] hover:delay-[9999s] active:delay-[9999s];
-}
-
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
 .c_col_elm{
@@ -99,7 +94,7 @@ textarea{
 
   display: grid;
   row-gap: 20px;
-  grid-template-columns: repeat(auto-fill, max(50%, 430px));
+  grid-template-columns: repeat(auto-fill, max(50%, 470px));
   align-items: start;
   align-self: self-start;
 }
