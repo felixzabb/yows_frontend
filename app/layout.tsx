@@ -1,7 +1,7 @@
 "use client";
 
 import '@styles/globals.css';
-import Provider from '@components/logic/Provider';
+import Provider from '@components/layout/Provider';
 import { Suspense } from 'react';
 import Loading from './loading';
 import Footer from '@components/layout/Footer';

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Tooltip from "../design/Tooltip";
+import Tooltip from "../custom/Tooltip";
 import { ScraperInfos } from "@custom-types";
 
 const WorkflowAction = ({ handleChange, scraperInfos, type, scrapeIdx, removeSpecificWorkflow, rowIndex, valid, actions }:

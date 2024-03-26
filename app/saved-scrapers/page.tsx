@@ -8,14 +8,14 @@ import SavedScrapes from "@components/user/SavedScrapes";
 
 const SavedScrapesPage = () => {
 
-  const { data: theSession, status: AuthStatus } =  useSession();
+  const { data: theSession, status: authStatus } =  useSession();
 
   return (
     <>
       {
-        AuthStatus !== "loading" ? 
+        authStatus !== "loading" ? 
           (
-            <SavedScrapes User={theSession?.user} AuthStatus={AuthStatus}/>
+            <SavedScrapes User={theSession?.user} authStatus={authStatus}/>
           ) 
           : 
           ( 

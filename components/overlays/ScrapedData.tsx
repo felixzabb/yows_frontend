@@ -2,7 +2,7 @@
 import { Fragment} from 'react';
 import Image from 'next/image'; 
 import { putToDb } from '@utils/api_funcs';
-import Tooltip from '@components/design/Tooltip';
+import Tooltip from '@components/custom/Tooltip';
 import { ScrapedData } from '@custom-types';
 import { rotateElement, showHideElement } from '@utils/elementFunction';
 import { useRouter } from 'next/navigation';

@@ -6,19 +6,19 @@ import { pullFromDb, runScrape, saveScraperCall } from "@utils/api_funcs";
 import { createAlert, handleWindowClose, showOverlay } from "@utils/generalFunctions";
 import { validateCssSelector, validateUrl } from "@utils/validation";
 import { appContext } from "@app/layout";
-import Tooltip from "../design/Tooltip";
+import Tooltip from "../custom/Tooltip";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { hideElement, rotateElement, showHideElement, isElementVisible } from "@utils/elementFunction";
-import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
+import NotSignedInDialog from "@components/dialogues/NotSignedInDialog";
 import { useRouter } from "next/navigation";
-import { ScrapedData, ScraperInfos, CustomAppContext, WorkflowData, ScrapeParams, LoopData, UserApiData, UserSubscriptionData, SavedScraper, SaveScraperReturn } from "@custom-types";
+import { ScrapedData, ScraperInfos, CustomAppContext, WorkflowData, ScrapeParams, LoopData, UserApiData, UserSubscriptionData, SavedScraper, SaveScraperReturn, PossibleCssSelectorDataTypes, PossibleUrlDataTypes } from "@custom-types";
 import WSFormSideNav from "./WSFormSideNav";
-import LoadingDialog from "@components/overlays/LoadingDialog";
+import LoadingDialog from "@components/dialogues/LoadingDialog";
 import ScrapeParamsComponent from "./ScrapeParamsComponent";
 import LoopContainer from "./LoopContainer";
 import WorkflowActionsContainer from "./WorkflowActionsContainer";
 
-const WSForm = ({ User, authStatus }) => {
+const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "authenticated" | "unauthenticated", previewData? : ScraperInfos | null}) => {
 
   const context = useContext<CustomAppContext>(appContext);
   const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
@@ -98,8 +98,16 @@ const WSForm = ({ User, authStatus }) => {
   }, []);
 
   useEffect(() => {
+    if(previewData){
+      setScraperInfos({...previewData});
+    }
+  }, [previewData]);
+
+  useEffect(() => {
     assertReadiness({amount: amountScrapes});
   }, [amountScrapes, scraperInfos, userData]);
+
+  
 
   // non-data function
 
@@ -354,6 +362,18 @@ const WSForm = ({ User, authStatus }) => {
     return;
   };
 
+  const handleUrlTypeChange = ({id, scrapeIdx} : { id: PossibleCssSelectorDataTypes | PossibleUrlDataTypes, scrapeIdx? : number }) : void => {
+
+    const newAll = scraperInfos?.all;
+    
+    newAll[scrapeIdx].scrape_params.url_as = id;
+
+    setScraperInfos((prevScraperInfos) => ({
+      ...prevScraperInfos,
+      all: newAll,
+    }));
+  };
+
   // validation functions
 
   const assertReadiness = ({amount} : {amount : number}) : void => {
@@ -601,24 +621,31 @@ const WSForm = ({ User, authStatus }) => {
   return ( 
     <div id="wsform-container" className="flex flex-row flex-grow items-start justify-start w-full h-[calc(100dvh-62px)]" >
       
-      <WSFormSideNav
-        appendScrape={appendScrape}
-        resetPage={resetPage}
-        loadScraper={loadScraper}
-        saveScraper={saveScraper}
-        userData={userData}
-        calculateWaitTime={calculateWaitTime}
-        scraperInfos={scraperInfos}
-        readiness={readiness}
-        setScrapedData={setScrapedData}
-        newSubmit={newSubmit}
-        authStatus={authStatus}
-        scrapedData={scrapedData}
-        deleteSpecificScrape={deleteSpecificScrape}
-        scraperRunning={scraperRunning}
-      />
+      {
+        !previewData && (
+          <>
+            <WSFormSideNav
+              appendScrape={appendScrape}
+              resetPage={resetPage}
+              loadScraper={loadScraper}
+              saveScraper={saveScraper}
+              userData={userData}
+              calculateWaitTime={calculateWaitTime}
+              scraperInfos={scraperInfos}
+              readiness={readiness}
+              setScrapedData={setScrapedData}
+              newSubmit={newSubmit}
+              authStatus={authStatus}
+              scrapedData={scrapedData}
+              deleteSpecificScrape={deleteSpecificScrape}
+              scraperRunning={scraperRunning}
+            />
 
-      <hr id="wsform-sideNav-separator" className="w-[2px] h-[calc(100dvh-62px)] bg-gray-400 " /> 
+            <hr id="wsform-sideNav-separator" className="w-[2px] h-[calc(100dvh-62px)] bg-gray-400 " /> 
+          </>
+        
+        )
+      }
 
       <div id={"wsform-all-scrapes-container"} className="scraper_grid p-5 pb-20 mt-5 w-full h-[100%-200px] max-h-[90dvh] mx-[1%] overflow-auto" >
         {   
@@ -740,8 +767,8 @@ const WSForm = ({ User, authStatus }) => {
                 <ScrapeParamsComponent
                   scrapeIdx={index}
                   scraperInfos={scraperInfos}
-                  setScraperInfos={setScraperInfos}
                   handleGlobalParamChange={handleGlobalParamChange}
+                  handleUrlTypeChange={handleUrlTypeChange}
                   deleteLoop={deleteLoop}
                   urlValid={validateUrl({input: scraperInfos?.all[index].scrape_params.website_url, as: scraperInfos?.all[index].scrape_params.url_as})}
                   

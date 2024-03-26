@@ -10,7 +10,7 @@ import { ScaleLoader } from "react-spinners";
 import { showHideElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
 import { appContext } from "@app/layout";
-import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
+import NotSignedInDialog from "@components/dialogues/NotSignedInDialog";
 import { signOut } from "next-auth/react";
 
 const Profile = ({ User, AuthStatus }) => {

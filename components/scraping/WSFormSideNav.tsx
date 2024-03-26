@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { hideElement, isElementVisible, rotateElement, showElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
-import SaveScraperDialog from "@components/overlays/SaveScraperDialog";
-import LoadScraperDialog from "@components/overlays/LoadScraperDialog";
+import SaveScraperDialog from "@components/dialogues/SaveScraperDialog";
+import LoadScraperDialog from "@components/dialogues/LoadScraperDialog";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
 import { Dispatch, SetStateAction, useContext } from "react";
