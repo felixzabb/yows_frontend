@@ -5,30 +5,36 @@ import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import { useSession } from "next-auth/react";
 import NavDropdown from "../dropdowns/NavDropdown";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { CustomAppContext } from "@custom-types";
+import { appContext } from "./Provider";
 
 
 const TopNav = () => {
+
+	const context = useContext<CustomAppContext>(appContext);
 	
 	const { data: theSession, status: authStatus } = useSession();
-	const [colorMode, setColorMode ] = useState("");
-
-	useEffect(() => {
-		setColorMode(window.localStorage.getItem("colorMode"));
-	}, []);
 
 	const switchColorMode = () : void => {
 
-		if(colorMode === "light"){
-			window.document.getElementById("html-elm").classList.add("dark"); 
+		if(context.appContextData.colorMode === "light"){
+			window.document.getElementById("html-elm").classList.add("dark");
+			window.document.getElementById("html-elm").classList.remove("light");
 			window.localStorage.setItem("colorMode", "dark");
-			setColorMode("dark");
+			context.setAppContextData((prevAppContextData) => ({
+				...prevAppContextData,
+				colorMode: "dark"
+			}));
 			return;
 		};
 		window.localStorage.setItem("colorMode", "light")
 		window.document.getElementById("html-elm").classList.remove("dark");
-		setColorMode("light");
-	};
+		window.document.getElementById("html-elm").classList.add("light"); 
+		context.setAppContextData((prevAppContextData) => ({
+			...prevAppContextData,
+			colorMode: "light"
+		}));	};
 	
   return(
 		<nav id="topNav-container" className="flex flex-row items-center px-6 justify-between w-full h-[44px]">
@@ -71,7 +77,7 @@ const TopNav = () => {
 
 							<div id="topNav-options-wrapper-0" className="w-[100px] h-[50px] flex flex-row items-center gap-x-4" >
 								{
-									colorMode === "dark" ?
+									context.appContextData.colorMode === "dark" ?
 										(
 											<Image
 												id="color-mode-toggle"

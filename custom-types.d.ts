@@ -47,9 +47,7 @@ type LoopData = {
   created : boolean
 };
 
-type ScrapedData = [
-  {scrape_runs: string[][]}
-];
+type ScrapedData = {scrape_runs: string[][]}[];
 
 type PossibleCssSelectorDataTypes = "json" | "text" | "csv";
 

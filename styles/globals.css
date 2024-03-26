@@ -19,7 +19,7 @@
 
 *{
   
-  @apply font-sans text-center text-text-color-light dark:text-text-color-dark;
+  @apply font-sans text-start text-text-color-light dark:text-text-color-dark;
 }
 
 input,
@@ -27,6 +27,9 @@ textarea{
   @apply focus:outline-none placeholder:text-gray-500 ;
 }
 
+.code-mirror{
+  @apply w-full h-auto;
+}
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
 .c_col_elm{

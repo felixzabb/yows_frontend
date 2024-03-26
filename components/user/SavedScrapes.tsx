@@ -2,8 +2,8 @@
 
 import { putToDb, deleteScrape, pullSavedScrapes, runScrape } from "@utils/api_funcs";
 import { useEffect, useState, useContext } from "react";
-import { appContext } from "@app/layout";
 import { useRouter } from "next/navigation";
+import { appContext } from "@components/layout/Provider";
 import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import Tooltip from "@components/custom/Tooltip";
@@ -165,7 +165,7 @@ const SavedScrapes = ({ User, authStatus }) => {
   }, []);
 
   return (
-    <div id="saved-scrapers-container" className="c_col_elm w-full h-auto -mt-[80px]" >
+    <div id="saved-scrapers-container" className="flex flex-col items-center w-full h-auto -mt-[60px] max-w-[1920px]" >
 
       <h1 id="saved-scrapers-heading" className="font-[Inter] text-[40px] my-5" >
         { 
@@ -182,15 +182,14 @@ const SavedScrapes = ({ User, authStatus }) => {
         }
       </h1>
 
-      {
-        <h2 id="saved-scrapers-amount-heading" className="text-[18px] text-start w-[95%] font-[700] px-1" >
-          {`Amount: ${savedScrapes ? (Object.keys(savedScrapes).length) : ((authStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])) ? ("0") : ("?"))} of ${maxScrapes}`}
-        </h2>
-      }
+      <h2 id="saved-scrapers-amount-heading" className="text-[18px] text-start w-[95%] font-[700] px-1" >
+        {`Amount: ${savedScrapes ? (Object.keys(savedScrapes).length) : ((authStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])) ? ("0") : ("?"))} of ${maxScrapes}`}
+      </h2>
+      
 
       <hr id="saved-scrapers-separator" className="w-[95%] bg-black h-[2px] mb-4 " />
 
-      <div id="saved-scrapers-wrapper" className="c_col_elm w-full h-auto gap-y-5 " >
+      <div id="saved-scrapers-wrapper" className="c_col_elm w-full h-auto gap-y-5 max-w-[1400px]" >
 
         {
           !savedScrapes && (

@@ -9,7 +9,7 @@ import { PacmanLoader } from "react-spinners";
 
 const SignUpPage = () => {
 
-  const { data: theSession, status: AuthStatus } = useSession();
+  const { status: authStatus } = useSession();
   const [ providers, setProviders ] = useState(null);
 
   const { push } = useRouter();
@@ -26,11 +26,11 @@ const SignUpPage = () => {
 	}, []);
 
   useEffect(() => {
-    if(AuthStatus === "authenticated"){
+    if(authStatus === "authenticated"){
       push("/");
     };
     return;
-  }, [AuthStatus]);
+  }, [authStatus]);
 
   return (
     <section id="sign-up/in-section" className="flex flex-col lg:flex-row w-full h-[80dvh] items-center" >
@@ -55,9 +55,9 @@ const SignUpPage = () => {
       </div>
 
       {
-        AuthStatus === "unauthenticated" ? 
+        authStatus === "unauthenticated" ? 
         (
-          <SignUp AuthStatus={AuthStatus} providers={providers} push={push} />
+          <SignUp providers={providers} push={push} />
         )
         :
         (

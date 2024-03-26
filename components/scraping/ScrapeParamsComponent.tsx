@@ -39,7 +39,7 @@ const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, handleUrlTypeChange, h
               className="focus:outline-none w-8 h-8 cursor-pointer"
               onChange={(e) => { handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "exec_type", value: "sequential"}); }}
             />
-            <label htmlFor={`execution-type-sequential-${scrapeIdx}`} className="w-full py-2 text-[16px] font-[600] cursor-pointer">
+            <label htmlFor={`execution-type-sequential-${scrapeIdx}`} className="w-full py-2 text-[16px] font-[600] text-center cursor-pointer">
               Sequential
               <div  id={`execution-type-sequential-tooltip-container-${scrapeIdx}`} className="group absolute right-1 -top-[5px] flex items-center justify-center min-w-[30px] h-full mt-[6px]" >
 
@@ -62,7 +62,7 @@ const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, handleUrlTypeChange, h
               className="focus:outline-none w-8 h-8 cursor-pointer"
               onChange={(e) => { deleteLoop({scrapeIdx : scrapeIdx}); handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "exec_type", value: "looping"}); }}
             />
-            <label htmlFor={`execution-type-looping-${scrapeIdx}`} className="w-full py-2 text-[16px] font-[600] cursor-pointer">
+            <label htmlFor={`execution-type-looping-${scrapeIdx}`} className="w-full py-2 text-[16px] font-[600] text-center cursor-pointer">
               Looping
               <div  id={`execution-type-looping-tooltip-container-${scrapeIdx}`} className="group absolute right-1 -top-[5px] flex items-center justify-center min-w-[30px] h-full mt-[6px]" >
 
@@ -85,7 +85,7 @@ const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, handleUrlTypeChange, h
           showHideElement({elementId: `advanced-options-container-${scrapeIdx}`}); 
           rotateElement({elementId: `toggle-advanced-options-visibility-${scrapeIdx}`, degrees: "180"});
         }} 
-        className="text-[14px] flex flex-row gap-x-1 items-center font-[400] ml-2 " >
+        className="text-[14px] flex flex-row gap-x-1 items-center font-[400] " >
         Advanced options
         <Image
           id={`toggle-advanced-options-visibility-${scrapeIdx}`}
@@ -96,52 +96,57 @@ const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, handleUrlTypeChange, h
           height={20}
         />
       </button>
-      <div id={`advanced-options-container-${scrapeIdx}`} className="hidden flex flex-row items-start justify-start p-2 gap-x-2 w-full h-auto min-h-[60px]" >
+      <div id={`advanced-options-container-${scrapeIdx}`} className="hidden flex flex-col items-start justify-start p-1 gap-x-2 w-full h-auto min-h-[60px]" >
 
+        <div className="w-full h-auto flex flex-row gap-x-2" >
+          <label className="w-auto h-auto flex flex-row items-center gap-x-2 text-[16px] font-[500]" >
+            <input
+              type="checkbox"
+              id={`swallow-errors-${scrapeIdx}`}
+              className="h-4 w-4 rounded-lg"
+              onChange={(e) => { handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "swallow_errors", value: e.target.checked}) }}
+            />
+            Swallow errors
+          </label>
+        </div>
         
-        <label className="w-auto h-auto flex flex-row items-center gap-x-2" >
-          <input
-            type="checkbox"
-            id={`swallow-errors-${scrapeIdx}`}
-            className="h-4 w-4 rounded-lg"
-            onChange={(e) => { handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "swallow_errors", value: e.target.checked}) }}
-          />
-          Swallow errors
-        </label>
-      </div>
+        
 
-      <hr id={`global-params-execType/url-separator-${scrapeIdx}`} className="w-[98%] h-[2px] my-1 bg-black " />
+        <div id={`browser-param-container-${scrapeIdx}`} className="w-full h-auto flex flex-row items-center gap-x-1 " >
 
-      <div id={`browser-param-container-${scrapeIdx}`} className="w-full h-auto flex flex-col items-start gap-y-1 " >
+          <h3 id={`browser-param-heading-${scrapeIdx}`} className="text-[16px] font-[600] w-[70px] text-start" >Browser</h3>
+              
+          <div id={`browser-param-wrapper-${scrapeIdx}`} className="relative flex flex-row items-center justify-end w-full h-[40px] gap-x-4" >
 
-        <h3 id={`browser-param-heading-${scrapeIdx}`} className="text-[18px] font-[600] w-[70px] text-start" >Browser</h3>
-            
-        <div id={`browser-param-wrapper-${scrapeIdx}`} className="relative flex flex-row items-center justify-between w-full h-[40px] gap-x-4" >
+            {
+              ["Chrome", "Edge", "Firefox", "Safari"].map((browserType) => (
 
-          {
-            ["edge", "chrome", "firefox", "safari"].map((browserType) => (
+                <div key={browserType} className="flex flex-row items-center  px-1 border border-gray-600 rounded-md dark:border-gray-300 w-[18%] cursor-pointer relative">
+                  <input 
+                    id={`browser-${browserType}-${scrapeIdx}`}
+                    defaultChecked={browserType === "chrome"}
+                    type="radio" 
+                    value="" 
+                    name={`browser-param-${scrapeIdx}`} 
+                    className="focus:outline-none w-3 h-3 cursor-pointer "
+                    onChange={() => { handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "browser_type", value: browserType}); }}
+                  />
+                  <label htmlFor={`browser-${browserType}-${scrapeIdx}`} className="w-full text-center text-[16px] font-[400] cursor-pointer">
+                    {browserType}
+                  </label>
+                </div>
 
-              <div key={browserType} className="flex flex-row items-center px-1 border border-gray-600 rounded-md dark:border-gray-300 w-[18%] cursor-pointer relative">
-                <input 
-                  id={`browser-${browserType}-${scrapeIdx}`}
-                  defaultChecked={browserType === "edge"}
-                  type="radio" 
-                  value="" 
-                  name={`browser-param-${scrapeIdx}`} 
-                  className="focus:outline-none w-4 h-4 cursor-pointer"
-                  onChange={() => { handleGlobalParamChange({scrapeIdx: scrapeIdx, paramName: "browser_type", value: browserType}); }}
-                />
-                <label htmlFor={`browser-${browserType}-${scrapeIdx}`} className="w-full py-1 text-[16px] font-[500] cursor-pointer">
-                  {browserType}
-                </label>
-              </div>
+              ))
+            }
 
-            ))
-          }
+          </div>
 
         </div>
-
       </div>
+
+      <hr id={`global-params-execType/url-separator-${scrapeIdx}`} className="w-[100%] h-[2px] my-1 bg-black " />
+
+      
 
       <div id={`url-param-container-${scrapeIdx}`} className="w-full h-auto flex flex-col items-start gap-y-1" >
         

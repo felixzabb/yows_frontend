@@ -5,7 +5,7 @@ import Image from "next/image";
 import { pullFromDb, runScrape, saveScraperCall } from "@utils/api_funcs";
 import { createAlert, handleWindowClose, showOverlay } from "@utils/generalFunctions";
 import { validateCssSelector, validateUrl } from "@utils/validation";
-import { appContext } from "@app/layout";
+import { appContext } from "@components/layout/Provider";
 import Tooltip from "../custom/Tooltip";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { hideElement, rotateElement, showHideElement, isElementVisible } from "@utils/elementFunction";
@@ -17,6 +17,7 @@ import LoadingDialog from "@components/dialogues/LoadingDialog";
 import ScrapeParamsComponent from "./ScrapeParamsComponent";
 import LoopContainer from "./LoopContainer";
 import WorkflowActionsContainer from "./WorkflowActionsContainer";
+import WSFormJsonEditor from "@components/code_editor/WSFormJsonEditor";
 
 const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "authenticated" | "unauthenticated", previewData? : ScraperInfos | null}) => {
 
@@ -47,6 +48,8 @@ const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "a
   const [ userData, setUserData ] = useState<{api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null>(null);
 
   const [ readiness, setReadiness ] = useState<{all: boolean, [index : number]: boolean}>({all: false, 0: false});
+
+  const [editMode, setEditMode] = useState<"normal" | "json">("normal");
 
   /** Only for dev!!! */
   useEffect(() => {
@@ -398,7 +401,7 @@ const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "a
    */
   const checkScrapeValid = ({scrapeIdx} : {scrapeIdx : number}) : boolean => {
 
-    if(!scraperInfos?.all || !scraperInfos?.all?.[scrapeIdx] || !userData){ return false; };
+    if(!scraperInfos?.all?.[scrapeIdx] || !userData){ return false; };
 
     const currentScrapeData = scraperInfos.all[scrapeIdx];
 
@@ -676,9 +679,7 @@ const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "a
 
                   <div  id={`run-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
 
-                    <div id={`run-scrape-tooltip-wrapper-${index}`} className="h-auto w-auto hidden group-hover:flex " >
-                      <Tooltip yOrientation="top" content={"Run this scrape. Need to be valid!"} /> 
-                    </div>
+                    <Tooltip yOrientation="top" content={"Run this scrape. Need to be valid!"} /> 
 
                     {
                       !scraperRunning && readiness[index] ? 
@@ -708,6 +709,41 @@ const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "a
 
                   </div>
                   
+                  <hr className="h-[38px] w-[2px] bg-gray-400 " />
+
+                  <div  id={`run-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
+
+                    <Tooltip yOrientation="top" content={`Edit this scrape via ${editMode === "json" ? "a UI." : "raw JSON."}`} /> 
+
+                    {
+                      editMode === "normal" ? 
+                        (
+                          <Image
+                            src={"/assets/icons/generic/curly_braces.svg"}
+                            id={`edit-scrape-json-${index}`}
+                            alt={"Edit scrape as JSON"}
+                            width={26}
+                            height={28}
+                            className="cursor-pointer "
+                            onClick={() => { setEditMode("json") }}
+                          />
+                        )
+                        :
+                        (
+                          <Image
+                            src={"/assets/icons/generic/cursor.svg"}
+                            id={`edit-scrape-ui-${index}`}
+                            alt={"Edit scrape via UI"}
+                            width={26}
+                            height={28}
+                            className="cursor-pointer "
+                            onClick={() => { setEditMode("normal") }}
+                          />
+                        )
+                    }
+
+                  </div>
+
                   <hr className="h-[38px] w-[2px] bg-gray-400 " />
                   
                   <div  id={`delete-scrape-tooltip-container-${index}`} className="relative group flex items-center justify-center min-w-[30px] h-full" >
@@ -762,111 +798,120 @@ const WSForm = ({ User, authStatus, previewData } : {User : any, authStatus : "a
 
               </aside>
 
-              <form id={`scrape-form-${index}`} className="px-2 min-w-[600px] flex flex-col items-center h-full w-auto justify-around gap-y-2 mb-2" >
+              {
+                editMode === "normal" && (
+                  <form id={`scrape-form-${index}`} className="px-2 min-w-[600px] flex flex-col items-center h-full w-auto justify-around gap-y-2 mb-2" >
 
-                <ScrapeParamsComponent
-                  scrapeIdx={index}
-                  scraperInfos={scraperInfos}
-                  handleGlobalParamChange={handleGlobalParamChange}
-                  handleUrlTypeChange={handleUrlTypeChange}
-                  deleteLoop={deleteLoop}
-                  urlValid={validateUrl({input: scraperInfos?.all[index].scrape_params.website_url, as: scraperInfos?.all[index].scrape_params.url_as})}
-                  
-                />
+                    <ScrapeParamsComponent
+                      scrapeIdx={index}
+                      scraperInfos={scraperInfos}
+                      handleGlobalParamChange={handleGlobalParamChange}
+                      handleUrlTypeChange={handleUrlTypeChange}
+                      deleteLoop={deleteLoop}
+                      urlValid={validateUrl({input: scraperInfos?.all[index].scrape_params.website_url, as: scraperInfos?.all[index].scrape_params.url_as})}
+                      
+                    />
 
-                <hr id={`global-params-actions-separator-${index}`} className="w-[98%] h-[2px] bg-black " />
+                    <hr id={`global-params-actions-separator-${index}`} className="w-[98%] h-[2px] bg-black " />
 
-                <div id={`workflow-options-actions-container-${index}`} className="w-full h-full flex flex-row items-start gap-x-4" >
+                    <div id={`workflow-options-actions-container-${index}`} className="w-full h-full flex flex-row items-start gap-x-4" >
 
-                  <div id={`workflow-options-wrapper-${index}`} className="flex flex-col items-start gap-y-1 pb-5 "  >
+                      <div id={`workflow-options-wrapper-${index}`} className="flex flex-col items-start gap-y-1 pb-5 "  >
 
-                      {
-                        // So that there is always at least one workflow element.
-                        scraperInfos?.all[index] !== undefined && scraperInfos?.all[index] !== null  && scraperInfos?.all[index].workflow.length > 1 ?
-                          (
+                          {
+                            // So that there is always at least one workflow element.
+                            scraperInfos?.all[index] !== undefined && scraperInfos?.all[index] !== null  && scraperInfos?.all[index].workflow.length > 1 ?
+                              (
 
-                            <button id={`pop-scrape-${index}`} className="row_options_button bg-[#bd3030]"  
-                              onClick={(e) => { e.preventDefault(); removeSpecificWorkflow({scrapeIdx: index, workflowIndex: (scraperInfos?.all[index].workflow.length - 1)}); }} >
-                              - last
-                            </button>
-                          )
-                          :
-                          (
-                            <button id={`pop-scrape-${index}_disabled`} disabled className="row_options_button brightness-50 bg-gray-300 dark:bg-gray-600 cursor-not-allowed " >
-                              - last
-                            </button>
-                          )
-                      }
+                                <button id={`pop-scrape-${index}`} className="row_options_button bg-[#bd3030]"  
+                                  onClick={(e) => { e.preventDefault(); removeSpecificWorkflow({scrapeIdx: index, workflowIndex: (scraperInfos?.all[index].workflow.length - 1)}); }} >
+                                  - last
+                                </button>
+                              )
+                              :
+                              (
+                                <button id={`pop-scrape-${index}_disabled`} disabled className="row_options_button brightness-50 bg-gray-300 dark:bg-gray-600 cursor-not-allowed " >
+                                  - last
+                                </button>
+                              )
+                          }
 
-                      <button id={`add-scrape-action-${index}`} className="row_options_button bg-[#003314cc]" 
-                        onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "scrape-action"}); }} >
-                        + Scrape
-                      </button>
+                          <button id={`add-scrape-action-${index}`} className="row_options_button bg-[#003314cc]" 
+                            onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "scrape-action"}); }} >
+                            + Scrape
+                          </button>
 
-                      <button id={`add-button-action-${index}`} className="row_options_button bg-[#003314cc] " 
-                        onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "btn-press"}); }} >
-                        + Button
-                      </button>
+                          <button id={`add-button-action-${index}`} className="row_options_button bg-[#003314cc] " 
+                            onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "btn-press"}); }} >
+                            + Button
+                          </button>
 
-                      <button id={`add-input-action-${index}`} className="row_options_button bg-[#003314cc] " 
-                        onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "input-fill"}); }} >
-                        + Input
-                      </button>
+                          <button id={`add-input-action-${index}`} className="row_options_button bg-[#003314cc] " 
+                            onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "input-fill"}); }} >
+                            + Input
+                          </button>
 
-                      <button id={`add-wait-action-${index}`} className="row_options_button bg-[#003314cc] " 
-                        onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "wait-time"}); }} >
-                        + Wait
-                      </button>
+                          <button id={`add-wait-action-${index}`} className="row_options_button bg-[#003314cc] " 
+                            onClick={(e) => { e.preventDefault(); appendWorkflow({scrapeIdx: index, type: "wait-time"}); }} >
+                            + Wait
+                          </button>
 
-                      {
-                        !scraperInfos?.all[index].loop.created ?
+                          {
+                            !scraperInfos?.all[index].loop.created ?
 
-                          (
-                            <button disabled={scraperInfos?.all[index].scrape_params.exec_type === "looping"} id={`create-loop-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" 
-                              onClick={(e) => { e.preventDefault(); createLoop({scrapeIdx: index}); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }} >
-                              + Loop
-                            </button>
-                          )
-                          :
-                          (
-                            <button id={`toggle-loop-visibility-${index}`} className="row_options_button flex flex-row gap-x-2 bg-purple-500 dark:bg-purple-700" 
-                              onClick={(e) => { e.preventDefault(); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }}  >
-                              <Image
-                                src={"/assets/icons/generic/view.svg"}
-                                alt={"Show/hide loop"}
-                                width={24}
-                                height={24}
-                                id="toggle-loop-visibility-clue"
-                              />
-                              Loop
-                            </button>
-                          )
-                      }
+                              (
+                                <button disabled={scraperInfos?.all[index].scrape_params.exec_type === "looping"} id={`create-loop-${index}`} className="row_options_button bg-purple-500 dark:bg-purple-700" 
+                                  onClick={(e) => { e.preventDefault(); createLoop({scrapeIdx: index}); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }} >
+                                  + Loop
+                                </button>
+                              )
+                              :
+                              (
+                                <button id={`toggle-loop-visibility-${index}`} className="row_options_button flex flex-row gap-x-2 bg-purple-500 dark:bg-purple-700" 
+                                  onClick={(e) => { e.preventDefault(); showHideElement({elementId: `loop-container-${index}`}); showHideElement({elementId: `actions-loop-separator-${index}`}); }}  >
+                                  <Image
+                                    src={"/assets/icons/generic/view.svg"}
+                                    alt={"Show/hide loop"}
+                                    width={24}
+                                    height={24}
+                                    id="toggle-loop-visibility-clue"
+                                  />
+                                  Loop
+                                </button>
+                              )
+                          }
 
-                  </div>
+                      </div>
 
-                  <WorkflowActionsContainer
-                    scrapeIdx={index}
-                    scraperInfos={scraperInfos}
-                    setScraperInfos={setScraperInfos}
-                    handleWorkflowChange={handleWorkflowChange}
-                    handleDrop={handleDrop}
-                    removeSpecificWorkflow={removeSpecificWorkflow}
-                    validateWorkflowAction={validateWorkflowAction}
-                  />
-                  
-                </div>
+                      <WorkflowActionsContainer
+                        scrapeIdx={index}
+                        scraperInfos={scraperInfos}
+                        setScraperInfos={setScraperInfos}
+                        handleWorkflowChange={handleWorkflowChange}
+                        handleDrop={handleDrop}
+                        removeSpecificWorkflow={removeSpecificWorkflow}
+                        validateWorkflowAction={validateWorkflowAction}
+                      />
+                      
+                    </div>
 
-                <hr id={`actions-loop-separator-${index}`} className="bg-black w-[98%] h-[2px] hidden " />
+                    <hr id={`actions-loop-separator-${index}`} className="bg-black w-[98%] h-[2px] hidden " />
 
-                <LoopContainer
-                  scrapeIdx={index}
-                  scraperInfos={scraperInfos}
-                  handleLoopChange={handleLoopChange}
-                  deleteLoop={deleteLoop}
-                />
+                    <LoopContainer
+                      scrapeIdx={index}
+                      scraperInfos={scraperInfos}
+                      handleLoopChange={handleLoopChange}
+                      deleteLoop={deleteLoop}
+                    />
 
-              </form>
+                  </form>
+                )
+              }
+              {
+                editMode === "json" && (
+                  <WSFormJsonEditor scrapeIdx={index} scraperInfos={scraperInfos} setScraperInfos={setScraperInfos} valid={readiness.all} />
+                )
+              }
             </section>
           ))
         }

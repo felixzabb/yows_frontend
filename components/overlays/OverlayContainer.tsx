@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
-import { appContext } from "@app/layout";
+import { appContext } from "@components/layout/Provider";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ErrorDialog from "../dialogues/ErrorDialog";
 import { CustomAppContext } from "@custom-types";
@@ -9,7 +9,7 @@ import { hideElement } from "@utils/elementFunction";
 
 const OverlayContainer = () => {
 
-  const context : CustomAppContext = useContext(appContext);
+  const context = useContext<CustomAppContext>(appContext);
   const urlQueryParams = useSearchParams();
   const pathName = usePathname()
   const { push } = useRouter();

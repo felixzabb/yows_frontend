@@ -5,7 +5,6 @@ import { changePassword, deleteUser } from "@utils/api_funcs";
 import { signOut } from "next-auth/react";
 import { inputElementValue, showElement, showHideElement } from "@utils/elementFunction";
 import { validatePassword } from "@utils/validation";
-import { useEffect } from "react";
 
 const GeneralProfileSettings = ({User, userData, save, push}) => {
   
@@ -164,7 +163,7 @@ const GeneralProfileSettings = ({User, userData, save, push}) => {
         {
           userData?.provider !== "credentials" ?
             (
-              <button id="create-yows-account" onClick={() => { push(`${process.env.NEXT_PUBLIC_YOWS_FRONTEND_HOST_URL}/signup`); }}
+              <button id="create-yows-account" onClick={async () => { await signOut({redirect: false}); push(`/signup?mode=up`); }}
                 className=" absolute bottom-2 right-4 border-[1px] font-[600] border-black dark:border-gray-200 rounded-lg p-1 px-2 hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark  " >
                 Register
               </button>

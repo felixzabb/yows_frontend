@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Tooltip from "../custom/Tooltip";
 import { ScraperInfos } from "@custom-types";
+import CssSelectorJsonEditor from "@components/code_editor/CssSelectorJsonEditor";
 
 const WorkflowAction = ({ handleChange, scraperInfos, type, scrapeIdx, removeSpecificWorkflow, rowIndex, valid, actions }:
   {
@@ -20,10 +21,17 @@ const WorkflowAction = ({ handleChange, scraperInfos, type, scrapeIdx, removeSpe
     <>
       <div className="flex flex-col items-center justify-start w-full h-full gap-y-2 pr-1 ">
         {
-          actions[type].map((actionData) => (
-            (actionData.pName === "css_selector" && scraperInfos.all[scrapeIdx].workflow[rowIndex].data.as !== "text") || actionData.pName === "fill_content" ?
-              (
+          actions[type].map((actionData) => {
+            
+            if(actionData.pName === "css_selector"&& scraperInfos.all[scrapeIdx].workflow[rowIndex].data.as === "json"){
+              
+              return <CssSelectorJsonEditor key={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`} scraperInfos={scraperInfos} scrapeIdx={scrapeIdx} workflowIndex={rowIndex} handleChange={handleChange} valid={valid} />
+            }
+            else if(actionData.pName === "fill_content" || (actionData.pName === "css_selector" && scraperInfos.all[scrapeIdx].workflow[rowIndex].data.as === "csv")){
+              
+              return (
                 <textarea required
+                  key={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`}
                   placeholder={`${actionData.placeholder}`}
                   value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data[actionData.pName]}
                   id={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`}
@@ -33,19 +41,21 @@ const WorkflowAction = ({ handleChange, scraperInfos, type, scrapeIdx, removeSpe
                   onChange={(e) => { handleChange({ scrapeIdx: scrapeIdx, workflowIndex: rowIndex, paramName: actionData.pName, value: (e.target.value) }) }}
                 />
               )
-              :
-              (
-                <input type={`${actionData.inputType}`} min={actionData?.minValue} max={actionData?.maxValue} required 
-                  placeholder={`${actionData.placeholder}`}
-                  value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data[actionData.pName]}
-                  id={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`}
-                  className={`text-[16px] px-2 rounded-lg min-h-[40px] h-fit text-start border-2 bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg w-full ${
-                    scraperInfos.all[scrapeIdx].workflow[rowIndex].data[actionData.pName] === "" ? "border-gray-600 dark:border-gray-300" : (valid ? "border-green-500" : "border-red-500")
-                  } `}
-                  onChange={(e) => { handleChange({ scrapeIdx: scrapeIdx, workflowIndex: rowIndex, paramName: actionData.pName, value: (e.target.value) }) }}
-                />
-              )
-            ))
+            }
+            
+            return(
+              <input type={`${actionData.inputType}`} min={actionData?.minValue} max={actionData?.maxValue} required
+              key={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`}
+                placeholder={`${actionData.placeholder}`}
+                value={scraperInfos.all[scrapeIdx].workflow[rowIndex].data[actionData.pName]}
+                id={`${type}-${actionData.pName}-${scrapeIdx}-${rowIndex}`}
+                className={`text-[16px] px-2 rounded-lg min-h-[40px] h-fit text-start border-2 bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg w-full ${
+                  scraperInfos.all[scrapeIdx].workflow[rowIndex].data[actionData.pName] === "" ? "border-gray-600 dark:border-gray-300" : (valid ? "border-green-500" : "border-red-500")
+                } `}
+                onChange={(e) => { handleChange({ scrapeIdx: scrapeIdx, workflowIndex: rowIndex, paramName: actionData.pName, value: (e.target.value) }) }}
+              />
+            );
+          })
         }
       </div>
       

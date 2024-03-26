@@ -2,21 +2,21 @@ import { useEffect, useState, useContext } from "react";
 import { pullFromDb, putToDb } from "@utils/api_funcs";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { UserProfileData } from "@custom-types";
+import { CustomAppContext, UserProfileData } from "@custom-types";
 import GeneralProfileSettings from "./GeneralProfileSettings";
 import SubscriptionProfileSettings from "./SubscriptionProfileSettings";
 import ApiProfileSettings from "./ApiProfileSettings";
 import { ScaleLoader } from "react-spinners";
 import { showHideElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
-import { appContext } from "@app/layout";
+import { appContext } from "@components/layout/Provider";
 import NotSignedInDialog from "@components/dialogues/NotSignedInDialog";
 import { signOut } from "next-auth/react";
 
 const Profile = ({ User, AuthStatus }) => {
 
   const urlQueryParams = useSearchParams();
-  const context = useContext(appContext);
+  const context = useContext<CustomAppContext>(appContext);
   const { push } = useRouter();
 
   const [ userData, setUserData ] = useState<UserProfileData | null>(null); 

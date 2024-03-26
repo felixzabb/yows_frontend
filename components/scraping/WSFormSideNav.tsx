@@ -6,7 +6,7 @@ import LoadScraperDialog from "@components/dialogues/LoadScraperDialog";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
 import { Dispatch, SetStateAction, useContext } from "react";
-import { appContext } from "@app/layout";
+import { appContext } from "@components/layout/Provider";
 
 const WSFormSideNav = (
   { appendScrape, resetPage, readiness, userData, newSubmit, deleteSpecificScrape, saveScraper, authStatus, calculateWaitTime, scrapedData, loadScraper, scraperInfos, scraperRunning} 

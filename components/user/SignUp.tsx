@@ -10,7 +10,7 @@ import errorCodes from "@utils/errorCodes.json";
 import { hideElement, inputElementValue, resetInputElementValue, showElement } from "@utils/elementFunction";
 import { validateEmail, validatePassword } from "@utils/validation";
 
-const SignUp = ({AuthStatus, providers, push}) => {
+const SignUp = ({providers, push}) => {
 
   const urlQueryParams = useSearchParams();
 

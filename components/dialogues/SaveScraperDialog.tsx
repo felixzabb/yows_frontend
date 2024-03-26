@@ -1,10 +1,10 @@
 "use client";
 
-import { ScrapedData, UserApiData, UserSubscriptionData } from "@custom-types";
+import { CustomAppContext, ScrapedData, UserApiData, UserSubscriptionData } from "@custom-types";
 import { inputElementChecked, inputElementValue } from "@utils/elementFunction";
 import { FormEvent, MouseEvent, useContext } from "react";
 import { showOverlay } from "@utils/generalFunctions";
-import { appContext } from "@app/layout";
+import { appContext } from "@components/layout/Provider";
 
 const SaveScraperDialog = ({userData, scrapedData, saveScraper} : 
   {
@@ -13,7 +13,7 @@ const SaveScraperDialog = ({userData, scrapedData, saveScraper} :
     saveScraper : ({name, description, withRes} : {name : string, description : string, withRes : boolean}) => Promise<boolean>
   }) => {
 
-  const context = useContext(appContext);
+  const context = useContext<CustomAppContext>(appContext);
   
   const submit = async (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => {
     e.preventDefault();
@@ -44,32 +44,19 @@ const SaveScraperDialog = ({userData, scrapedData, saveScraper} :
       </h2>
 
       <input maxLength={32} placeholder={"Name"} id={"save-scrape-name"} required
-        className='min-w-[60%] w-auto text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'/>
+        className='min-w-[60%] w-auto text-white dark:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'/>
       
       <textarea maxLength={512}
         placeholder={"Description"} 
         id={"save-scrape-desc"} 
-        className="min-w-[60%] w-auto h-max min-h-[120px] text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 rounded-s-none rounded-es-lg rounded-se-lg " 
+        className="min-w-[60%] w-auto h-max min-h-[120px] text-white dark:text-black text-start border-2 border-gray-300 dark:border-gray-600 bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 rounded-s-none rounded-es-lg rounded-se-lg " 
       />
 
-      {     
-        scrapedData[0].scrape_runs[0]? 
-          (
-            <label className="inline-flex items-center cursor-pointer">
-              <h3 className="pr-4 text-[18px] text-start font-[600] mb-[6px]" >Save results:</h3>
-              <input id="save-scrape-results" type="checkbox" className="sr-only peer" />
-              <div className="relative w-11 h-6 bg-stone-400 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-            </label>
-          )
-          :
-          (
-            <label className="inline-flex items-center cursor-not-allowed">
-              <h3 className="pr-4 text-[18px] text-start font-[600] mb-[6px]" >Save results:</h3>
-              <input id="save-scrape-results" type="checkbox" className="sr-only peer" disabled />
-              <div className="relative w-11 h-6 bg-stone-400 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-            </label>
-          )
-      }
+      <label className={`inline-flex items-center ${scrapedData[0].scrape_runs[0] ? "cursor-pointer" : "cursor-not-allowed"}`}>
+        <h3 className="pr-4 text-[18px] text-start font-[600] mb-[6px]" >Save results:</h3>
+        <input id="save-scrape-results" type="checkbox" className="sr-only peer" disabled={scrapedData[0].scrape_runs[0] ? false : true} />
+        <div className="relative w-11 h-6 bg-stone-400 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+      </label>
       
       <button id={"submit-save-scrape-btn"} className='dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]' onClick={(e) => {submit(e)}} >
         Submit

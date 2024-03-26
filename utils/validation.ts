@@ -19,13 +19,12 @@ export const validateCssSelector = ({input, as} : {input : string, as : Possible
     let jsonValid = true;
 
     try{
-      if(JSON.parse(input).length === 0){ return false; };
-      for(const item of JSON.parse(input)){
+      if(input.length === 0){ return false; };
+      for(const item of input){
         if(!validateCssSelector({input: item, as : "text"}) ){
           jsonValid = false;
         }
       }
-
     }
     catch{
       jsonValid = false;
@@ -34,14 +33,19 @@ export const validateCssSelector = ({input, as} : {input : string, as : Possible
   }
   else if(as === "csv"){
 
-    let csvValid = true;
+    try{
 
-    for(const item of input.split(",")){
-      if(!validateCssSelector({input: item, as : "text"})){
-        csvValid = false;
-      }
+      for(const item of input.split(",")){
+        if(!validateCssSelector({input: item, as : "text"})){
+          return false;
+        }
+      } 
     }
-    return csvValid
+    catch{
+      return false;
+    };
+    
+    return true;
   }
 
   if(!input){ return false; };
