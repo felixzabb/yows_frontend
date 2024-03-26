@@ -1,60 +1,36 @@
 import Image from "next/image";
-import { hideElement, inputElementChecked, isElementVisible, rotateElement, showElement } from "@utils/elementFunction";
+import { hideElement, isElementVisible, rotateElement, showElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
 import SaveScraperDialog from "@components/overlays/SaveScraperDialog";
 import LoadScraperDialog from "@components/overlays/LoadScraperDialog";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
-import { CustomAppContext, ScrapeData, ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData, SessionUserData } from "@custom-types";
-import { Dispatch, SetStateAction } from "react";
+import { ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
+import { Dispatch, SetStateAction, useContext } from "react";
+import { appContext } from "@app/layout";
 
 const WSFormSideNav = (
-  {amountScrapes, readiness, resetScrape, userData, newSubmit, deleteSpecificScrape, User, authStatus, calculateWaitTime, scrapedData, setScrapedData, push, context, scraperInfos, setScraperInfos, defScrapeData, scraperRunning} 
+  { appendScrape, resetPage, readiness, userData, newSubmit, deleteSpecificScrape, saveScraper, authStatus, calculateWaitTime, scrapedData, loadScraper, scraperInfos, scraperRunning} 
   :
   {
-    amountScrapes : number
-    resetScrape : ({scrapeIdx} : {scrapeIdx : number}) => void 
+    appendScrape : () => void
+    resetPage : () => void
     readiness : {all : boolean, [index : number ] : boolean}
     newSubmit : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => Promise<void>
     deleteSpecificScrape : ({scrapeIdx} : {scrapeIdx : number}) => void
     userData : {api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null
-    User : any
-    authStatus : "authenticated" | "unauthenticated" | "loading"
+    authStatus : "authenticated" | "unauthenticated"
     calculateWaitTime : ({all, scrapeIdx} : {all : boolean, scrapeIdx : number}) => number
     scrapedData : ScrapedData
     setScrapedData : Dispatch<SetStateAction<ScrapedData>>
-    push : (href : string) => void
-    context : CustomAppContext
     scraperInfos : ScraperInfos
-    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>
-    defScrapeData : ScrapeData
     scraperRunning : boolean
+    loadScraper : ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) => Promise<boolean>
+    saveScraper : ({name, description, withRes} : {name : string, description : string, withRes : boolean}) => Promise<boolean>
   }
   ) => {
-
-  // Non-data functions
-
-  const resetPage = () => {
   
-    if(!confirm("Are your sure you want to reset the whole scraper?")){ return; };
-
-    for(let i = 0; i < scraperInfos.all.length; i++){
-      resetScrape({scrapeIdx: i});
-    };
-  };
-
-  /** Appends a scrape to scraperInfo.all 
-   */
-  const appendScrape = () : void => {
-
-    setScraperInfos((prevScraperInfos) => ({
-      ...prevScraperInfos,
-      all: [
-        ...prevScraperInfos.all,
-        defScrapeData
-      ]
-    }));   
-    return;
-  };
+  const context = useContext(appContext);
+  const amountScrapes = scraperInfos?.all.length;
 
   // Non-data functions
 
@@ -75,8 +51,6 @@ const WSFormSideNav = (
       };
     };
   };
-
-
 
   return (
     <section id={"wsform-sideNav"} className="flex flex-col items-center min-w-[270px] max-w-[350px] w-full h-[calc(100dvh-62px)] overflow-auto bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg p-4 " >
@@ -163,22 +137,6 @@ const WSFormSideNav = (
 
         <hr id="wsform-sideNav-options-separator-0" className="my-2 max-h-[1px] w-full border-black dark:border-white opacity-10" />
 
-        <div id={"global-undetected-option-container"} className="flex flex-row items-center justify-between w-full h-auto gap-x-4" >
-
-          <h2 id={"global-undetected-option-heading"} className="font-inter text-[18px]" > {`Global undetected:`} </h2>
-          
-          
-          <label id={"global-undetected-option-wrapper"} className="inline-flex items-center cursor-pointer">
-            <input id="global-undetected-switch" type="checkbox" className="sr-only peer" />
-            <div onClick={() => { setScraperInfos((prevScraperInfos) => {
-                  prevScraperInfos.args.global_undetected = !inputElementChecked({elementId: "global-undetected-switch"});
-                  return prevScraperInfos;
-                })}}
-                className="relative w-11 h-6 bg-stone-400 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-          </label>
-
-        </div>
-
         <div id={"collapse-all-option-container"} className="flex flex-row items-center justify-between w-full h-auto gap-x-4" >
 
           <h2 id={"collapse-all-option-heading"} className="font-inter text-[18px]" > {`Collapse all:`} </h2>
@@ -244,7 +202,7 @@ const WSFormSideNav = (
                     width={40}
                     height={40}
                     className="cursor-pointer"
-                    onClick={() => { showOverlay({context: context, title: "Save a Scraper!", element: <SaveScraperDialog scraperInfos={scraperInfos} userData={userData} scrapedData={scrapedData} userId={User.id} expectedRuntime={calculateWaitTime({all: true, scrapeIdx: null})} push={push} context={context} />}); }}
+                    onClick={() => { showOverlay({context: context, title: "Save a Scraper!", element: <SaveScraperDialog userData={userData} scrapedData={scrapedData} saveScraper={saveScraper} />}); }}
                   />
                 )
                 :
@@ -273,7 +231,7 @@ const WSFormSideNav = (
             width={40}
             height={40}
             className="cursor-pointer"
-            onClick={() => { showOverlay({context: context, title: "Load a Scraper!", element: <LoadScraperDialog context={context} push={push} setScraperInfos={setScraperInfos} setScrapedData={setScrapedData} />}); }}                       
+            onClick={() => { showOverlay({context: context, title: "Load a Scraper!", element: <LoadScraperDialog loadScraper={loadScraper} />}); }}                       
           />
         </div>
 

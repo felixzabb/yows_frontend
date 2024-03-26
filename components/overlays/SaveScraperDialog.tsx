@@ -1,34 +1,21 @@
 "use client";
 
-import { CustomAppContext, SaveScraperReturn, ScrapedData, ScraperInfos, UserApiData, UserSubscriptionData } from "@custom-types";
+import { ScrapedData, UserApiData, UserSubscriptionData } from "@custom-types";
 import { inputElementChecked, inputElementValue } from "@utils/elementFunction";
-import { FormEvent, MouseEvent } from "react";
-import { saveScraper } from "@utils/api_funcs";
-import { createAlert, showOverlay } from "@utils/generalFunctions";
+import { FormEvent, MouseEvent, useContext } from "react";
+import { showOverlay } from "@utils/generalFunctions";
+import { appContext } from "@app/layout";
 
-const SaveScraperDialog = ({scraperInfos, userData, scrapedData, expectedRuntime, push, userId, context} : {scraperInfos : ScraperInfos, userData : {api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null, scrapedData : ScrapedData, expectedRuntime : number, push : (href : string) => void, userId : string, context : CustomAppContext}) => {
+const SaveScraperDialog = ({userData, scrapedData, saveScraper} : 
+  {
+    userData : {api : UserApiData, subscription : UserSubscriptionData, saved_scrapers : {scraper : string}[]} | null, 
+    scrapedData : ScrapedData
+    saveScraper : ({name, description, withRes} : {name : string, description : string, withRes : boolean}) => Promise<boolean>
+  }) => {
 
-  const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
-
-  const exportScraper = async ({name, description, withRes} : {name : string, description : string, withRes : boolean}) : Promise<void> => {
-
-    const saveData = [{scraper : scraperInfos, name: name, description: description, runtime: expectedRuntime, scraped_data: withRes ? scrapedData : emptyScrapedData}];
-
-    const saveOperation : SaveScraperReturn = await saveScraper({apiKey: "felix12m", userId: userId, data: saveData});
-
-    if(!saveOperation.acknowledged){
-      push(`?app_error=${saveOperation.errors[0]}&e_while=saving%20scraper`);
-      return;
-    };
-
-    navigator.clipboard.writeText(saveOperation.created_item);
-
-    createAlert({context: context, textContent: "Saved scraper successfully! ID copied to clipboard.", duration: 2000, color: "normal"});
-
-    return;
-  };
+  const context = useContext(appContext);
   
-  const submit = (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => {
+  const submit = async (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => {
     e.preventDefault();
 
     if(userData.saved_scrapers.length >= userData.subscription.scraper_storage){
@@ -36,7 +23,7 @@ const SaveScraperDialog = ({scraperInfos, userData, scrapedData, expectedRuntime
       return;
     };
 
-    exportScraper({ 
+    await saveScraper({ 
       name: inputElementValue({elementId: "save-scrape-name"}), 
       description: inputElementValue({elementId: "save-scrape-desc"}), 
       withRes: inputElementChecked({elementId: "save-scrape-results"}),

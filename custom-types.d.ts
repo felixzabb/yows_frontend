@@ -37,6 +37,7 @@ type ScrapeParams = {
   browser_type : string
   amount_actions_local : number
   exec_type : "sequential" | "looping"
+  swallow_errors : boolean
 };
 
 type LoopData = {

@@ -22,9 +22,11 @@
   @apply font-sans text-center text-text-color-light dark:text-text-color-dark;
 }
 
-input{
-  @apply focus:outline-none;
+input,
+textarea{
+  @apply focus:outline-none placeholder:text-gray-500 ;
 }
+
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
 .c_col_elm{
@@ -93,7 +95,7 @@ input{
 .rows_grid{
 
   display: grid;
-  row-gap: 20px;
+  row-gap: 8px;
   grid-template-columns: repeat(auto-fill, max(50%, 470px));
   align-items: start;
   align-self: self-start;

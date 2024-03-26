@@ -1,53 +1,16 @@
 "use client";
 
-import { CustomAppContext, SavedScraper, ScrapedData, ScraperInfos } from "@custom-types";
-import { inputElementChecked, inputElementValue, showElement } from "@utils/elementFunction";
-import { Dispatch, FormEvent, MouseEvent, SetStateAction, useState } from "react";
-import { pullFromDb } from "@utils/api_funcs";
-import { createAlert } from "@utils/generalFunctions";
+import { inputElementChecked, inputElementValue } from "@utils/elementFunction";
+import { FormEvent, MouseEvent, useState } from "react";
 
-const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {context : CustomAppContext, push : (href : string) => void, setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>, setScrapedData : Dispatch<SetStateAction<ScrapedData>>}) => {
+const LoadScraperDialog = ({loadScraper} : { loadScraper : ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) => Promise<boolean>}) => {
 
-  const emptyScrapedData : ScrapedData = [{scrape_runs: []}];
   const [loadScraperError, setLoadScraperError] = useState("");
   const [loadScraperDataValid, setLoadScraperDataValid] = useState(false);
 
-  /** Pulls a scraperInfo object from the DB and sets it as the scraperInfo object in use. Needs to be async.
-   * PARAMS:
-   * - id (String): the passed in id, by which the API will search the DB
-   */
-  const loadScraper = async ({id, resultsNeeded, confirmNeeded} : {id : string, resultsNeeded : boolean, confirmNeeded : boolean}) : Promise<boolean>  => {
-
-    if(confirmNeeded && !confirm("Loading the link will remove your current work")){ return; };
-  
-    const pullData = {filter : {"_id" : id}, projection: ["scraper", "scraped_data"]};
-
-    const pullOperation = await pullFromDb<SavedScraper>({apiKey: "felix12m", dbName: "test_runs", collectionName : "scrape_info_saves", data: pullData});
-
-    if(!pullOperation.acknowledged || pullOperation.found.length === 0){
-      setLoadScraperError("Failed to load scraper!");
-      // push(`?app_error=${pullOperation.errors[0]}&e_while=loading%20scraper`);
-      return false;
-    };
-
-    const foundScrapeObject : ScraperInfos = pullOperation.found.at(0).scraper;
-
-    setScraperInfos(foundScrapeObject);
-
-    if(resultsNeeded){
-
-      const potentialFoundResults : ScrapedData = pullOperation.found.at(0).scraped_data;
-      if(potentialFoundResults[0]){ setScrapedData(potentialFoundResults); };
-    }
-    else{ setScrapedData(emptyScrapedData); };
-    
-    createAlert({context: context, textContent: "Loaded Scraper successfully!", duration: 2000, color: "normal"});
-
-    return true;
-  };
-
   const submit = async (e : MouseEvent<HTMLButtonElement, any> | FormEvent) => { 
     e.preventDefault();
+    
     setLoadScraperError("");
     
     const loaded = await loadScraper({
@@ -56,7 +19,10 @@ const LoadScraperDialog = ({context, push, setScraperInfos, setScrapedData} : {c
       confirmNeeded: true
     });
 
-    if(!loaded){ return; };
+    if(!loaded){
+      setLoadScraperError("Failed to load scraper!");
+      return; 
+    };
     const form = window.document.getElementById("load-scraper-form") as HTMLFormElement;
     form.reset();
     window.document.getElementById("document-overlay-container").classList.add("hidden");

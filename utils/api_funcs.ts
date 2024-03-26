@@ -113,7 +113,7 @@ export const putToDb = async ({ apiKey, dbName, collectionName, data }: { apiKey
   };
 };
 
-export const saveScraper = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: object[] }): Promise<SaveScraperReturn> => {
+export const saveScraperCall = async ({ apiKey, userId, data }: { apiKey: string, userId: string, data: object[] }): Promise<SaveScraperReturn> => {
 
   const saveScrapeUrl = process.env.NEXT_PUBLIC_YOWS_API_HOST_URL + "/api/v" + process.env.NEXT_PUBLIC_YOWS_API_VERSION + "/user/save_scrape?" + new URLSearchParams({
     api_key: apiKey,
