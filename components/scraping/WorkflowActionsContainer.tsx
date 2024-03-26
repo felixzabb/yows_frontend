@@ -3,17 +3,17 @@ import React, { Dispatch, SetStateAction } from 'react'
 import WorkflowAction from './WorkflowAction';
 import ChangeDataInterpretationDropdown from '@components/dropdowns/ChangeDataInterpretationDropdown';
 import Image from 'next/image';
-import Tooltip from '@components/design/Tooltip';
+import Tooltip from '@components/custom/Tooltip';
 
 const WorkflowActionsContainer = ({scrapeIdx, scraperInfos, setScraperInfos, validateWorkflowAction, handleDrop, handleWorkflowChange, removeSpecificWorkflow} : 
   {
     scrapeIdx : number
     scraperInfos : ScraperInfos
-    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>
-    validateWorkflowAction : ({scrapeIdx, workflowIndex} : { scrapeIdx : number, workflowIndex : number}) => boolean
-    handleDrop : ({scrapeIdx, localIndex, dropIndex} : {scrapeIdx : number, localIndex : number, dropIndex : number}) => void
-    handleWorkflowChange : ({scrapeIdx, workflowIndex, paramName, value} : {scrapeIdx : number, workflowIndex : number, paramName : string, value : string | number | boolean}) => void
-    removeSpecificWorkflow : ({scrapeIdx, workflowIndex} : {scrapeIdx: number, workflowIndex: number}) => void
+    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>> | null
+    validateWorkflowAction : ({scrapeIdx, workflowIndex} : { scrapeIdx : number, workflowIndex : number}) => boolean | null
+    handleDrop : ({scrapeIdx, localIndex, dropIndex} : {scrapeIdx : number, localIndex : number, dropIndex : number}) => void | null
+    handleWorkflowChange : ({scrapeIdx, workflowIndex, paramName, value} : {scrapeIdx : number, workflowIndex : number, paramName : string, value : string | number | boolean}) => void | null
+    removeSpecificWorkflow : ({scrapeIdx, workflowIndex} : {scrapeIdx: number, workflowIndex: number}) => void | null
 
   }
   ) => {
@@ -72,10 +72,8 @@ const WorkflowActionsContainer = ({scrapeIdx, scraperInfos, setScraperInfos, val
     "btn-press" : "Press buttons by providing one or many css-selectors.",
     "input-fill" : "Fill inputs by providing a or multiple pairs of css-selectors and contents.",
     "wait-time" : "Halt execution of a scrape(r)."
-  }
+  };
 
-  
-  
   return (
     <div id={`actions-container-${scrapeIdx}`} className="flex flex-col items-center gap-y-2  w-full h-auto " >
       { 

@@ -6,16 +6,16 @@ import { appContext } from "@app/layout";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
-import PreviewWS from "../scraping/preview/PreviewWS";
-import Tooltip from "@components/design/Tooltip";
+import Tooltip from "@components/custom/Tooltip";
 import ScrapedDataOverlay from "@components/overlays/ScrapedData";
 import { showElement, showHideElement } from "@utils/elementFunction";
 import { showOverlay } from "@utils/generalFunctions";
 import { AppContextData, CustomAppContext, SavedScraper, ScrapedData } from "@custom-types";
-import NotSignedInDialog from "@components/overlays/NotSignedInDialog";
-import LoadingDialog from "@components/overlays/LoadingDialog";
+import NotSignedInDialog from "@components/dialogues/NotSignedInDialog";
+import LoadingDialog from "@components/dialogues/LoadingDialog";
+import WSForm from "@components/scraping/WSForm";
 
-const SavedScrapes = ({ User, AuthStatus }) => {
+const SavedScrapes = ({ User, authStatus }) => {
 
   const context = useContext<CustomAppContext>(appContext);
 
@@ -152,12 +152,12 @@ const SavedScrapes = ({ User, AuthStatus }) => {
   var savedScrapesInitialFetch = true;
   useEffect(() => {
 
-    if(AuthStatus === "unauthenticated"){
+    if(authStatus === "unauthenticated"){
       showOverlay({context: context, element: <NotSignedInDialog message="You can't access/have saved scrapers. Please create an account or sign in!" />, title: "Not signed in!"});
       return;
     };
     
-    if(AuthStatus === "authenticated" && savedScrapesInitialFetch){
+    if(authStatus === "authenticated" && savedScrapesInitialFetch){
       getAllSavedScrapes();
       savedScrapesInitialFetch = false;
     };
@@ -175,7 +175,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
             ) 
             : 
             ( 
-              AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0]?._id) ? 
+              authStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0]?._id) ? 
                 ("You have no saved scrapers") 
                 : ("All your saved scrapers" )
             )
@@ -184,7 +184,7 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
       {
         <h2 id="saved-scrapers-amount-heading" className="text-[18px] text-start w-[95%] font-[700] px-1" >
-          {`Amount: ${savedScrapes ? (Object.keys(savedScrapes).length) : ((AuthStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])) ? ("0") : ("?"))} of ${maxScrapes}`}
+          {`Amount: ${savedScrapes ? (Object.keys(savedScrapes).length) : ((authStatus === "unauthenticated" || (savedScrapes && !savedScrapes[0])) ? ("0") : ("?"))} of ${maxScrapes}`}
         </h2>
       }
 
@@ -248,9 +248,17 @@ const SavedScrapes = ({ User, AuthStatus }) => {
                       <Tooltip content={"Preview the scraper."} /> 
                     </div>
 
-                    <Image id={`preview-scraper-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/view.svg' alt='html id name input tooltip icon' width={40} height={40} onClick={() => { showOverlay({context: context, title: "Preview your scraper!", element: <fieldset className="w-full h-full" disabled >
-                                                                                                                                                                                                                                                                                          <PreviewWS previewData={savedScrapes.at(saveIdx).scraper} />
-                                                                                                                                                                                                                                                                                        </fieldset>}); }} 
+                    <Image 
+                      id={`preview-scraper-tooltip-toggle`} 
+                      className="cursor-pointer" 
+                      src='/assets/icons/generic/view.svg' 
+                      alt='html id name input tooltip icon' 
+                      width={40} height={40} 
+                      onClick={() => { showOverlay({context: context, title: "Preview your scraper!", element: 
+                        <fieldset className="w-full h-full pointer-events-none break-words" disabled >
+                          <WSForm User={User} authStatus={authStatus} previewData={savedScrapes.at(saveIdx).scraper} />
+                        </fieldset>}); 
+                      }} 
                     />
 
                   </div>

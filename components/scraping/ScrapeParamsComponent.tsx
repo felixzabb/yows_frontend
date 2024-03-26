@@ -2,35 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Tooltip from "@components/design/Tooltip";
+import Tooltip from "@components/custom/Tooltip";
 import ChangeDataInterpretationDropdown from "@components/dropdowns/ChangeDataInterpretationDropdown";
 import { PossibleCssSelectorDataTypes, PossibleUrlDataTypes, ScraperInfos } from "@custom-types";
-import { Dispatch, SetStateAction } from "react";
 import { rotateElement, showHideElement } from "@utils/elementFunction";
-import { validateUrl } from "@utils/validation";
 
 
-const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, setScraperInfos, handleGlobalParamChange, deleteLoop, urlValid} : 
+const ScrapeParamsComponent = ({ scrapeIdx, scraperInfos, handleUrlTypeChange, handleGlobalParamChange, deleteLoop, urlValid} : 
   { 
     scrapeIdx : number
     scraperInfos : ScraperInfos
-    setScraperInfos : Dispatch<SetStateAction<ScraperInfos>>
-    handleGlobalParamChange : ({scrapeIdx, paramName, value} : {scrapeIdx: number, paramName: string, value: string | boolean}) => void
-    deleteLoop : ({ scrapeIdx } : {scrapeIdx : number}) => void
+    handleUrlTypeChange : ({id, scrapeIdx} : { id: PossibleCssSelectorDataTypes | PossibleUrlDataTypes, scrapeIdx? : number }) => void | null
+    handleGlobalParamChange : ({scrapeIdx, paramName, value} : {scrapeIdx: number, paramName: string, value: string | boolean}) => void | null
+    deleteLoop : ({ scrapeIdx } : {scrapeIdx : number}) => void | null
     urlValid: boolean
   }) => {
 
-  const handleUrlTypeChange = ({id, scrapeIdx} : { id: PossibleCssSelectorDataTypes | PossibleUrlDataTypes, scrapeIdx? : number }) : void => {
-
-    const newAll = scraperInfos?.all;
-    
-    newAll[scrapeIdx].scrape_params.url_as = id;
-
-    setScraperInfos((prevScraperInfos) => ({
-      ...prevScraperInfos,
-      all: newAll,
-    }));
-  };
 
   return (
     <div id={`global-params-container-${scrapeIdx}`} className=" flex flex-col items-start min-h-[40px] h-auto gap-y-1 w-full justify-evenly mt-1 p-2" >

@@ -3,7 +3,7 @@
 import { useContext, useEffect, useState } from "react";
 import { appContext } from "@app/layout";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import ErrorDialog from "./ErrorDialog";
+import ErrorDialog from "../dialogues/ErrorDialog";
 import { CustomAppContext } from "@custom-types";
 import { hideElement } from "@utils/elementFunction";
 
