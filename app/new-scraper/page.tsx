@@ -7,23 +7,13 @@ import WSForm from "@components/scraping/WSForm";
 
 const NewScraperPage = () => {
 
-  const { data: theSession, status: authStatus } = useSession();
+  const { data: sessionData, status: authStatus } = useSession();
 
-  return (
-    <>
-      {
-        authStatus === "loading" ? 
-          (
-            <Loading />
-          ) 
-          : 
-          (
-            <WSForm User={theSession?.user} authStatus={authStatus} />
-          )
-      
-      }
-    </>
-  );
+  if(authStatus === "loading"){
+    return <Loading />;
+  };
+
+  return <WSForm User={sessionData?.user} authStatus={authStatus} />;
 };
 
 export default NewScraperPage;

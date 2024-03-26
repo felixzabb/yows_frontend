@@ -221,11 +221,9 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
                     <h2 id={`saved-scraper-heading-${saveIdx}`} className="text-[18px] w-[240px] max-w-[240px] overflow-hidden text-start flex flex-row items-center font-[500] whitespace-pre-wrap " >{`${savedScrapes[saveIdx].name}`}</h2>
 
-                    <div id={`saved-scraper-heading-tooltip-container-${saveIdx}`} className="group flex items-center justify-center min-w-[30px] h-full mb-[-3px]" >
+                    <div id={`saved-scraper-heading-tooltip-container-${saveIdx}`} className="group relative flex items-center w-auto h-full mb-[-3px]" >
 
-                      <div id={`saved-scraper-heading-tooltip-wrapper-${saveIdx}`} className="h-auto w-auto hidden group-hover:flex " >
-                        <Tooltip content={"Show scraper metadata."} /> 
-                      </div>
+                      <Tooltip xOrientation="middle" yOrientation="top" content={"Show scraper metadata."} /> 
 
                       <Image id={`saved-scraper-heading-tooltip-toggle`} className="cursor-pointer" src='/assets/icons/generic/tooltip_purple.svg' alt='html id name input tooltip icon' width={26} height={26} onClick={() => { showHideElement({elementId: `saved-scraper-meta-container-${saveIdx}`}); showHideElement({elementId: `saved-scraper-options/meta-separator-${saveIdx}`}); }} />
 
@@ -288,9 +286,9 @@ const SavedScrapes = ({ User, AuthStatus }) => {
 
                   </div>
 
-                  <div id={`delete-scraper-container-${saveIdx}`} className="group flex items-center justify-center min-w-[30px] h-full mb-[-3px] absolute right-2 " >
+                  <div id={`delete-scraper-container-${saveIdx}`} className="group flex items-center w-auto h-full absolute right-2 " >
 
-                    <div id={`delete-scraper-tooltip-wrapper-${saveIdx}`} className="relative h-auto w-auto hidden group-hover:flex " >
+                    <div id={`delete-scraper-tooltip-wrapper-${saveIdx}`} className="relative w-auto h-full" >
                       <Tooltip content={"Delete the scraper."} /> 
                     </div>
 
