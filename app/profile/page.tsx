@@ -2,27 +2,17 @@
 
 import { useSession } from "next-auth/react";
 import Loading from "@app/loading";
-import Profile from "@components/user/profile/Profile";
-
+import Profile from "@components/profile/Profile";
 
 const ProfilePage = () => {
   
-  const { data: theSession, status: AuthStatus } = useSession();
+  const { data: sessionData, status: authStatus } = useSession();
 
-  return (
-    <>
-      {
-        AuthStatus !== "loading" ? 
-          ( 
-            <Profile User={theSession?.user} AuthStatus={AuthStatus} />            
-          ) 
-          :   
-          (
-            <Loading />
-          )
-      }
-    </>
-  );
+  if(authStatus === "loading"){
+    return <Loading />;
+  };
+
+  return <Profile User={sessionData?.user as UserSessionData} authStatus={authStatus as "authenticated" | "unauthenticated" } />;
 };
 
 export default ProfilePage;

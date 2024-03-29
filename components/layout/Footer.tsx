@@ -3,32 +3,29 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { pingServer } from "@utils/api_funcs";
-import { useRouter } from "next/navigation";
+import { pingServerCall } from "@utils/apiCalls";
 
 const Footer = () => {
 
   const [ apiGood, setApiGood ] = useState(true);
-  const { push } = useRouter();
+
+  const pingServer = async () => {
+
+    const pingOperation = await pingServerCall({apiKey: "felix12m", check_db: false});
+
+    setApiGood(Boolean(pingOperation.acknowledged));
+  };
 
   useEffect(() => {
-    const ping = async () => {
-      const pingOperation = await pingServer({apiKey: "felix12m", check_db: false});
-      if(!pingOperation.acknowledged){
-        setApiGood(false);
-        // push(`?app_error=${pingOperation.errors[0]}&e_while=pinging%20server`);
-        return;
-      };
-      setApiGood(true);
-    };
-    ping();
+    
+    pingServer();
   }, []);
 
   return (
     
     <article className="bg-header-light-bg dark:bg-header-dark-bg max-h-[150px] h-[150px] w-[100dvw] px-4 py-12 mx-auto space-y-8 overflow-hidden sm:px-6 lg:px-8">
       <aside className="flex flex-row justify-center -mx-5 -my-2">
-        <h2 id="server-status" className={`text-base leading-6 px-4 py-2 ${apiGood ? ("text-green-600") : ("text-red-600")}`} >{`Server status: ${apiGood ? ("all good"):("bad")}`}</h2>
+        <h2 className={`text-base leading-6 px-4 py-2 ${apiGood ? ("text-green-600") : ("text-red-600")}`} >{`Server status: ${apiGood ? ("all good"):("bad")}`}</h2>
         <div className="px-5 py-2">
           <Link href="#" className="text-base leading-6 text-gray-500 hover:text-gray-900">
               About

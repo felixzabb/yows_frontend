@@ -5,160 +5,116 @@ import Image from "next/image";
 import { ScaleLoader } from "react-spinners";
 import { useSession } from "next-auth/react";
 import NavDropdown from "../dropdowns/NavDropdown";
-import { useState, useEffect, useContext } from "react";
-import { CustomAppContext } from "@custom-types";
-import { appContext } from "./Provider";
-
+import { useContext } from "react";
+import { themeContext } from "./Provider";
 
 const TopNav = () => {
 
-	const context = useContext<CustomAppContext>(appContext);
+	const themeContextAccess = useContext<ThemeContextValue>(themeContext);
 	
-	const { data: theSession, status: authStatus } = useSession();
+	const { data: sessionData, status: authStatus } = useSession();
 
 	const switchColorMode = () : void => {
 
-		if(context.appContextData.colorMode === "light"){
-			window.document.getElementById("html-elm").classList.add("dark");
-			window.document.getElementById("html-elm").classList.remove("light");
-			window.localStorage.setItem("colorMode", "dark");
-			context.setAppContextData((prevAppContextData) => ({
-				...prevAppContextData,
-				colorMode: "dark"
-			}));
-			return;
-		};
-		window.localStorage.setItem("colorMode", "light")
-		window.document.getElementById("html-elm").classList.remove("dark");
-		window.document.getElementById("html-elm").classList.add("light"); 
-		context.setAppContextData((prevAppContextData) => ({
-			...prevAppContextData,
-			colorMode: "light"
-		}));	};
+
+		const colorMode = themeContextAccess.data;
+		console.log(colorMode)
+
+		const colorModeTransformer : { dark: "light", light: "dark" } = { dark: "light", light: "dark" }
+
+		if(!["dark", "light"].includes(colorMode)){ return; };
+
+		window.document.getElementById("html-elm").classList.add(colorModeTransformer[colorMode]);
+		window.document.getElementById("html-elm").classList.remove(colorMode);
+
+		window.localStorage.setItem("colorMode", colorMode);
+
+		themeContextAccess.change(colorModeTransformer[colorMode]);
+	};
 	
   return(
-		<nav id="topNav-container" className="flex flex-row items-center px-6 justify-between w-full h-[44px]">
+		<nav id="topNav-container" className="flex flex-row items-center px-6 justify-between w-full h-[44px] pb-1 border-b-2 border-gray-400">
 
-			<Link id="topNav-index-link" href='/'>
-				<Image
-					id="topNav-yows-logo"
-					priority 
+			<Link href='/'>
+				<Image priority 
 					src='/assets/icons/logo/yows_logo_1.svg'
 					alt="Yows logo"
 					className="object-contain rounded-full"
-					width={40}
-					height={40} 
+					width={40} height={40} 
 				/>
 			</Link>
-			{
-				authStatus === "loading" && (
-					<ScaleLoader height={50} width={4} margin={3} speedMultiplier={2} color="#8A2BE2" className="mr-3" />
-				)
-			}
-			{
-				authStatus === "authenticated" ?
-					( 
-						<div id="topNav-options-container" className="flex flex-row items-center w-fit h-auto justify-between gap-x-2 ">
 
-							<Link prefetch id="topNav-new-scraper-link" href="/new-scraper"  className="text-[20px] font-[Helvetica] font-[500] px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
+			
+
+			<div className="flex flex-row items-center w-fit h-[50px] justify-between gap-x-2 pr-1 ">
+
+				{
+					authStatus === "loading" && (
+						<ScaleLoader height={40} width={4} margin={3} speedMultiplier={2} color="#8A2BE2" className="mr-3" />
+					)
+				}
+
+				{
+					authStatus === "authenticated" && (
+						<>
+							<Link href="/new"  className="text-[20px] font-[Helvetica] font-[500] px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
 								New 
 							</Link>
 
-							<Link prefetch id="topNav-saved-scrapers-link" href="/saved-scrapers" className="text-[20px] font-[Helvetica] font-[500] px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight  dark:hover:animate-navColorFadeDark" >
+							<Link href="/saved" className="text-[20px] font-[Helvetica] font-[500] px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight  dark:hover:animate-navColorFadeDark" >
 								Saved 
 							</Link>
 
 							<NavDropdown 
 								thingToClick={<span className="text-[20px] font-[Helvetica] font-[500] px-2 py-[6px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark " >Help</span>}
-								options={[{name : "Errors", href: "/errors"}, {name : "Docs", href:"/docs"}]}
 							/>
 
-							<hr id="topNav-options-separator-0" className="h-[40px] w-[2px] bg-gray-400 " />
+							<hr className="h-[40px] w-[2px] bg-gray-400 " />
 
-							<div id="topNav-options-wrapper-0" className="w-[100px] h-[50px] flex flex-row items-center gap-x-4" >
-								{
-									context.appContextData.colorMode === "dark" ?
-										(
-											<Image
-												id="color-mode-toggle"
-												src="/assets/icons/colorMode/dark_mode_moon.svg"
-												alt="Color mode switch"
-												width={34}
-												height={34}
-												className="object-contain cursor-pointer"
-												onClick={switchColorMode}
-											
-											/>
-										)
-										:
-										(
-											<Image
-												id="color-mode-toggle"
-												src="/assets/icons/colorMode/light_mode_sun.svg"
-												alt="Color mode switch"
-												width={34}
-												height={34}
-												className="object-contain cursor-pointer"
-												onClick={switchColorMode}
-											
-											/>
-										)
-								}
-
-								<Link id="topNav-profile-link" href='/profile?section=general'>
-									<Image
-										id="user-profile-image"
-										src={theSession?.user.image} 
-										width={34} 
-										height={34}
-										alt="Profile" 
-										className='object-contain rounded-full mt-[2px]' 
-									/>
-								</Link>
-							</div>
-						</div>
-					)
-					:
-					(
-						authStatus !== "loading" && (
-							<div id="signed-out-options-container" className="flex flex-row gap-x-4 items-end justify-center h-full" >
-								<Link id="signup-link" href='/signup' className="text-[20px] font-[Helvetica] font-[500] w-auto px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
-									Sign up/in
-								</Link>
-
-								{
-									colorMode === "dark" ?
-										(
-											<Image
-												id="color-mode-toggle"
-												src="/assets/icons/colorMode/dark_mode_moon.svg"
-												alt="Color mode switch"
-												width={34}
-												height={34}
-												className=" cursor-pointer mb-[3px]"
-												onClick={switchColorMode}
-											
-											/>
-										)
-										:
-										(
-											<Image
-												id="color-mode-toggle"
-												src="/assets/icons/colorMode/light_mode_sun.svg"
-												alt="Color mode switch"
-												width={34}
-												height={34}
-												className=" cursor-pointer mb-[3px]"
-												onClick={switchColorMode}
-											
-											/>
-										)
-								}
-							</div>
-							
-						)	
+							<Link href='/profile?section=general'>
+								<Image
+									src={sessionData?.user.image} 
+									width={34} height={34}
+									alt="Profile" 
+									className='object-contain rounded-full mt-[2px]' 
+								/>
+							</Link>
+						</>
 					)
 				}
+
+				{
+					authStatus === "unauthenticated" && (
+						<>
+							<Link href='/auth?mode=up' className="text-[20px] font-[Helvetica] font-[500] w-auto px-2 py-[3px] rounded-lg hover:animate-navColorFadeLight dark:hover:animate-navColorFadeDark" >
+								Sign up/in
+							</Link>
+						</>
+					)
+				}
+
+				{
+					themeContextAccess.data === "dark" ?
+						(
+							<Image
+								src="/assets/icons/colorMode/dark_mode_moon.svg"
+								alt="Color mode switch"
+								width={34} height={34}
+								onClick={switchColorMode}
+							/>
+						)
+						:
+						(
+							<Image
+								src="/assets/icons/colorMode/light_mode_sun.svg"
+								alt="Color mode switch"
+								width={34} height={34}
+								onClick={switchColorMode}
+							/>
+						)
+				}
+				
+			</div>
 		</nav>
 	);
 };

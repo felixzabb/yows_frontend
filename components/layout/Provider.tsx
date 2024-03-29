@@ -2,48 +2,60 @@
 
 import { useEffect, createContext, useState } from 'react';
 import { SessionProvider } from 'next-auth/react';
-import { determineColorMode } from '@utils/generalFunctions';
-import { AppContextData } from '@custom-types';
+import { determineColorMode } from '@utils/generalUtils';
 
-export const appContext = createContext(null);
+export const themeContext = createContext(null);
+export const overlayContext = createContext(null);
+export const alertContext = createContext(null);
 
-const Provider = ({children, session } : {children : any, session? : any}) => {
+const Provider = ({ children, session } : { children : any, session? : any }) => {
 
-  const [appContextData, setAppContextData ] = useState<AppContextData>({
-    colorMode: "light",
-    alert : {
-      text: "This is an alert text.",
-      color: "",
-    },
-    overlay: {
-      element: null,
-      title: "",
-      data: {
-        results: [{scrape_runs: []}],
-      },
-    },
-    enabledFeatures : {
-      test: 0,
-    },
-  });
+  const [ theme, setTheme ] = useState<ThemeContextData>("light");
+  const [ overlayData, setOverlayData ] = useState<OverlayContextData>({ title: "", element: null });
+  const [ alertData, setAlertData ] = useState<AlertContextData>({ text: "", color: "neutral" });
 
+  // Determine the theme when themeContext loads and set it.
   useEffect(() => {
 
     const colorMode = determineColorMode();
+    
     window.document.getElementById("html-elm").classList.add(colorMode)
+    setTheme(colorMode);
     
-    setAppContextData((prevAppContext) => { 
-      prevAppContext.colorMode = colorMode
-      return prevAppContext; 
+  }, [themeContext]);
+
+  // Functions defined here for easier expandability.
+
+  const changeOverlayData = ({ title, element } : OverlayContextData) : void => {
+    
+    setOverlayData({
+      title: title,
+      element: element
     });
+  };
+
+  const changeAlertData = ({ text, color } : AlertContextData) : void => {
     
-  }, []);
+    setAlertData({
+      text: text,
+      color: color
+    });
+  };
+
+  const changeTheme = (theme : ThemeContextData) : void => {
+
+    setTheme(theme);
+  };
 
   return (
     <SessionProvider session={session} >
-      <appContext.Provider value={{appContextData: appContextData, setAppContextData: setAppContextData}}>
-        {children}
-      </appContext.Provider>
+      <themeContext.Provider value={{ data: theme, change: changeTheme } as ThemeContextValue} >
+        <overlayContext.Provider value={{ data: overlayData, change: changeOverlayData } as OverlayContextValue} >
+          <alertContext.Provider value={{ data: alertData, change: changeAlertData } as AlertContextValue} >
+            {children}
+          </alertContext.Provider>
+        </overlayContext.Provider>
+      </themeContext.Provider>
     </SessionProvider>
   );
 };

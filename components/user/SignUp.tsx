@@ -1,40 +1,34 @@
 "use client";
 
-import { CreateUser } from "@utils/api_funcs";
+import { CreateUserCall } from "@utils/apiCalls";
 import { signIn } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import errorCodes from "@utils/errorCodes.json";
-import { hideElement, inputElementValue, resetInputElementValue, showElement } from "@utils/elementFunction";
-import { validateEmail, validatePassword } from "@utils/validation";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import errorCodes from "@docs/errorCodes.json";
+import { z } from "zod";
+import { passwordSchema, signUpDataSchema } from "@schemas/authSchemas";
 
-const SignUp = ({providers, push}) => {
+const SignUp = () => {
 
-  const urlQueryParams = useSearchParams();
+  const { push } = useRouter();
 
-  const [signInError, setSignInError] = useState<string>("");
-  const [signInDataValid, setSignInDataValid] = useState(false);
-  const [signUpError, setSignUpError] = useState<string>("");
-  const [signUpDataValid, setSignUpDataValid] = useState(false);
+  const [ signUpData, setSignUpData ] = useState<SignUpData>({ email: "", passwordConfirm: "", password: "", alias: "" });
+  const [ signUpError, setSignUpError ] = useState("");
 
-  const signUserUp = async (e) => {
+  const signUpEmailValid = z.string().email().safeParse(signUpData.email).success;
+  const signUpPasswordValid = passwordSchema.safeParse(signUpData.password).success;
+  const signUpPasswordReenterValid = passwordSchema.safeParse(signUpData.passwordConfirm).success;
+  const signUpAliasValid = true; // Add validation through backend
+  const signUpDataValid = signUpDataSchema.safeParse(signUpData).success;
 
-    const {email, password, alias } = {
-      email: inputElementValue({elementId: "sign-up-email"}), 
-      password: inputElementValue({elementId: "sign-up-password"}), 
-      alias: inputElementValue({elementId: "sign-up-alias"}),
-    }
+  const signUserUp = async () : Promise<void> => {
 
-    e.preventDefault();
-
-    const createUserOperation = await CreateUser({
-      apiKey: "felix12m",
+    const createUserOperation = await CreateUserCall({
       provider: "credentials",
-      email: email,
-      password: password,
-      alias: alias,
+      email: signUpData.email,
+      password: signUpData.password,
+      alias: signUpData.alias,
       scheme: "default",
     });
 
@@ -52,17 +46,13 @@ const SignUp = ({providers, push}) => {
         }
       });
 
-      resetInputElementValue({elementId: "sign-up-password"});
-      resetInputElementValue({elementId: "sign-up-password-reenter"});
-      
-      showElement({elementId: "sign-up-error"});
       return;
-    }
+    };
 
     const signInOperation = await signIn("credentials", {
       redirect: false,
-      email: email,
-      password: password,
+      email: signUpData.email,
+      password: signUpData.password,
     });
 
     if(!signInOperation.ok){
@@ -80,326 +70,87 @@ const SignUp = ({providers, push}) => {
         }
       });
 
-      resetInputElementValue({elementId: "sign-up-password"});
-      resetInputElementValue({elementId: "sign-up-password-reenter"});
-
-      showElement({elementId: "sign-up-error"});
       return;
-    }
-    
-    const signUpForm = window.document.getElementById("sign-up-form") as HTMLFormElement;
-    // signUpForm.reset();
-
-    return;
-  };
-
-  const assertSignUpDataValid = () : void => {
-
-    const possibleClasses = ["border-red-500"]
-
-    const signUpEmailInput = window.document.getElementById("sign-up-email") as HTMLInputElement;
-    const signUpEmail = signUpEmailInput.value;
-    const emailValid = validateEmail({email: signUpEmail});
-
-    if(!emailValid){
-      if(signUpEmail.length === 0){
-        signUpEmailInput.classList.remove(possibleClasses[0])
-      }
-      else{
-        signUpEmailInput.classList.add(possibleClasses[0])
-      }
-    }
-    else if(emailValid){
-      signUpEmailInput.classList.remove(possibleClasses[0])
-    }
-
-    const signUpPasswordInput = window.document.getElementById("sign-up-password") as HTMLInputElement;
-    const signUpPassword = signUpPasswordInput.value;
-    const passwordValid = validatePassword({password: signUpPassword});
-    
-    if(!passwordValid){
-      if(signUpPassword.length === 0){
-        signUpPasswordInput.classList.remove(possibleClasses[0])
-      }
-      else{
-        signUpPasswordInput.classList.add(possibleClasses[0])
-      }
-    }
-    else if(passwordValid){
-      signUpPasswordInput.classList.remove(possibleClasses[0])
-    }
-
-    const signUpPasswordReenterInput = window.document.getElementById("sign-up-password-reenter") as HTMLInputElement;
-    const signUpPasswordReenter = signUpPasswordReenterInput.value;
-    let passwordReenterValid = validatePassword({password: signUpPasswordReenter});
-
-    if(signUpPasswordReenter !== signUpPassword){ passwordReenterValid = false; };
-    
-    if(!passwordReenterValid){
-      if(signUpPasswordReenter.length === 0){
-        signUpPasswordReenterInput.classList.remove(possibleClasses[0])
-      }
-      else{
-        signUpPasswordReenterInput.classList.add(possibleClasses[0])
-      }
-    }
-    else if(passwordReenterValid){
-      signUpPasswordReenterInput.classList.remove(possibleClasses[0])
-    }
-
-    if(emailValid && passwordValid && passwordReenterValid){ hideElement({elementId: "sign-up-error"}); setSignUpDataValid(true); }
-    else{ 
-      setSignUpDataValid(false); 
-      if(!emailValid){
-        setSignUpError("Email must be a valid email!");
-      }
-      else if(!passwordValid){
-        setSignUpError("Password must be at least 8 characters long and contain: 1 uppercase, 1 lowercase, 1 number, 1 special character!");
-      }
-      else if(!passwordReenterValid){
-        setSignUpError("Password field don't match!");
-      }
-      showElement({elementId: "sign-up-error"});
     };
 
-    return;
-  };
-
-  const signUserIn = async (e) : Promise<void> => {
-
-    e.preventDefault(); 
-
-    const signInOperation = await signIn("credentials", {
-      redirect: false,
-      email: inputElementValue({elementId: "sign-in-email"}),
-      password: inputElementValue({elementId: "sign-in-password"}),
-    });
-
-
-    if(!signInOperation.ok){
-
-      const errorCode = signInOperation.error;
-      const errorPath = errorCode.split("-");
-      const errorData = errorCodes?.[errorPath[0]]?.[errorPath[1]]?.[errorPath[2]];
-
-
-      setSignInError(() => {
-        if(errorData === undefined){
-          return "An unexpected error occurred";
-        }
-        else{
-          return errorData.message;
-        }
-      });
-
-      const signInPasswordInput = window.document.getElementById("sign-in-password") as HTMLInputElement;
-      signInPasswordInput.value = "";
-      showElement({elementId: "sign-in-error"});
-      return;
-    }
     push("/");
-    return;
   };
 
-  const assertSignInDataValid = () : void => {
+  const handleSignUnDataChange = ({ paramName, value } : { paramName : "email" | "passwordConfirm" | "password" | "alias", value : string }) : void => {
 
-    const possibleClasses = ["border-red-500"]
+    setSignUpError("");
 
-    const signInEmailInput = window.document.getElementById("sign-in-email") as HTMLInputElement;
-    const signInEmail = signInEmailInput.value;
-    const emailValid = validateEmail({email: signInEmail});
-
-    if(!emailValid){
-      if(signInEmail.length === 0){
-        signInEmailInput.classList.remove(possibleClasses[0])
-      }
-      else{
-        signInEmailInput.classList.add(possibleClasses[0])
-      }
-    }
-    else if(emailValid){
-      signInEmailInput.classList.remove(possibleClasses[0])
-    }
-
-    const signInPasswordInput = window.document.getElementById("sign-in-password") as HTMLInputElement;
-    const signInPassword = signInPasswordInput.value;
-    const passwordValid = validatePassword({password: signInPassword});
+    const signUpDataCopy = signUpData;
+    signUpDataCopy[paramName] = value;
     
-    if(!passwordValid){
-      if(signInPassword.length === 0){
-        signInPasswordInput.classList.remove(possibleClasses[0])
-      }
-      else{
-        signInPasswordInput.classList.add(possibleClasses[0])
-      }
-    }
-    else if(passwordValid){
-      signInPasswordInput.classList.remove(possibleClasses[0])
-    }
+    setSignUpData({ ...signUpDataCopy });
 
-    if(emailValid && passwordValid){ hideElement({elementId: "sign-in-error"}); setSignInDataValid(true); }
-    else{ 
-      setSignInDataValid(false); 
-      if(!emailValid){
-        setSignInError("Email must be a valid email!");
-      }
-      else if(!passwordValid){
-        setSignInError("Password must be at least 8 characters long and contain: 1 uppercase, 1 lowercase, 1 number, 1 special character!")
-      }
-      showElement({elementId: "sign-in-error"});
-    };
-
-    return;
+    if(signUpData.password !== signUpData.passwordConfirm){ setSignUpError("Password fields don't match!"); };
   };
-
-  useEffect(() => {
-
-    window.document.getElementById("sign-in-error").classList.add("hidden");
-
-    if(!urlQueryParams.has("mode")){ 
-      if(urlQueryParams.size === 0){ push("?mode=in"); }
-      else{ push(`?${urlQueryParams}&mode=in`); };
-    }
-    else{
-      const currentMode = urlQueryParams.get("mode");
-      const modeTransformer = {in: "up", up: "in"};
-
-      window.document.getElementById(`sign-${currentMode}-form`).classList.remove("hidden");
-      window.document.getElementById(`sign-${modeTransformer[currentMode]}-form`).classList.add("hidden");
-    };
-
-  }, [urlQueryParams]);
 
   return (
-    <div id="sign-up/in-container" className="w-[50%] h-full flex flex-col gap-y-4 items-center py-6" >
+    <form onSubmit={async (e) => { e.preventDefault(); await signUserUp(); }} className=" flex flex-col items-center w-full h-[400px] gap-y-3" >
 
-      <form id="sign-in-form" onSubmit={(e) => { async (e) => { await signUserIn(e); } }} className="flex flex-col items-center w-full h-auto gap-y-3 mb-20" >
+      <h2 className="text-[24px] font-[600] font-inter" >Create your own YOWS account!</h2>
 
-        <h2 id="sign-in-options-heading" className="text-[24px] font-[600] font-inter" >Sign in to your YOWS account!</h2>
+      <input type="email"
+        required
+        placeholder="Email address"
+        id="sign-up-email"
+        value={signUpData.email}
+        onChange={(e) => { handleSignUnDataChange({ paramName: "email", value: e.target.value }); }}
+        className={`max-w-[80%] text_color_rev w-full text-start border-2 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px] ${signUpData.email === "" ? "border_neutral_rev" : (signUpEmailValid ? "border_valid" : "border_invalid")} `}
+      />
 
-        <input
-          type="email"
-          required
-          placeholder="Email address"
-          onChange={assertSignInDataValid}
-          id="sign-in-email"
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
+      <input type="password"
+        required
+        placeholder="Password"
+        id="sign-up-password"
+        onChange={(e) => { handleSignUnDataChange({ paramName: "password", value: e.target.value }); }}
+        className={`max-w-[80%] text_color_rev w-full text-start border-2 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px] ${signUpData.password === "" ? "border_neutral_rev" : (signUpPasswordValid ? "border_valid" : "border_invalid")} `}
+      />
 
-        <input
-          type="password"
-          required
-          placeholder="Password"
-          onChange={assertSignInDataValid}
-          id="sign-in-password"
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
+      <input type="password"
+        required
+        placeholder="Confirm Password"
+        id="sign-up-password-reenter"
+        onChange={(e) => { handleSignUnDataChange({ paramName: "passwordConfirm", value: e.target.value }); }}
+        className={`max-w-[80%] text_color_rev w-full text-start border-2 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px] ${signUpData.passwordConfirm === "" ? "border_neutral_rev" : (signUpPasswordReenterValid ? "border_valid" : "border_invalid")} `}
+      />
 
-        <h3 id="sign-in-error" className="hidden text-red-500 text-[14px] font-[500] w-[90%]" >
-          {signInError}
-        </h3>
+      <input type="text"
+        required
+        placeholder="Username/Alias"
+        id="sign-up-alias"
+        onChange={(e) => { handleSignUnDataChange({ paramName: "alias", value: e.target.value }); }}
+        className={`max-w-[80%] text_color_rev w-full text-start border-2 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px] ${signUpData.alias === "" ? "border_neutral_rev" : (signUpAliasValid ? "border_valid" : "border_invalid")} `}
+      />
+      
+      <h3 className="text-red-500 text-[14px] text-center font-[500] w-[90%]" >
+        {signUpError}
+      </h3>
 
-        {
-          signInDataValid ? 
+      {
+        signUpDataValid ? 
           (
-            <button id="sign-in-submit" onClick={async (e) => { await signUserIn(e); } }
-              className='relative dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]'  >
+            <button onClick={async (e) => { e.preventDefault(); await signUserUp(); }}
+              className='dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]'  >
               Submit
             </button>
-          ):
+          )
+          :
           (
-            <button id="sign-in-submit_disabled" disabled
+            <button disabled
               className='relative cursor-not-allowed border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]'  >
               Submit
             </button>
           )
-        }
+      }
 
-        <Link href={"?mode=up"} id="sign-up-toggle" className="text-[16px] font-[400]" >
-          Don't have an Account yet? <span className="underline font-[600]" >Sign up!</span>
-        </Link>
-      </form>
-
-      <form id="sign-up-form" onSubmit={async (e) => { await signUserUp(e); }} className=" hidden flex flex-col items-center w-full h-auto gap-y-3 mb-20" >
-
-        <h2 id="sign-in-options-heading" className="text-[24px] font-[600] font-inter" >Create your own YOWS account!</h2>
-
-        <input
-          type="email"
-          required
-          placeholder="Email address"
-          id="sign-up-email"
-          onChange={assertSignUpDataValid}
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
-
-        <input
-          type="password"
-          required
-          placeholder="Password"
-          id="sign-up-password"
-          onChange={assertSignUpDataValid}
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
-
-        <input
-          type="password"
-          required
-          placeholder="Enter password again"
-          id="sign-up-password-reenter"
-          onChange={assertSignUpDataValid}
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
-
-        <input
-          type="text"
-          required
-          placeholder="Username/Alias"
-          id="sign-up-alias"
-          onChange={assertSignUpDataValid}
-          className='max-w-[80%] w-full text-white dark:text-black placeholder:text-white dark:placeholder:text-black text-start border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-[#424242] dark:bg-wsform-sideNav-light-bg p-1 h-[40px]'
-        />
-        
-        <h3 id="sign-up-error" className="hidden text-red-500 text-[14px] font-[500] w-[90%]" >
-          {signUpError}
-        </h3>
-
-        {
-          signUpDataValid ? 
-            (
-              <button id="sign-up-submit" onClick={async (e) => { await signUserUp(e); }}
-                className='relative dark:hover:animate-navColorFadeLight dark:hover:text-black hover:animate-navColorFadeDark hover:text-white border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]'  >
-                Submit
-              </button>
-            )
-            :
-            (
-              <button id="sign-up-submit_disabled" disabled
-                className='relative cursor-not-allowed border-[1px] rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] w-[100px] h-[45px] text-center font-[600]'  >
-                Submit
-              </button>
-            )
-        }
-
-        <Link href={"?mode=in"} id="sign-in-toggle" className="text-[16px] font-[400]" >
-          Already have an account? <span className="underline font-[600]" >Sign in!</span>
-        </Link>
-      </form>
-
-      <button id="sign-in-with-google" onClick={async (e) => { await signIn(providers.google.id); }}
-        className='flex flex-row items-center gap-x-2 justify-between border-2 rounded-lg border-gray-600 dark:border-gray-300 p-2 text-[18px] max-w-[80%] w-full h-auto text-center font-[600]'  >
-        <Image
-          src="/assets/icons/providers/google.svg"
-          alt="google provider icon"
-          id="google-provider"
-          className="height-auto width-auto"
-          width={40}
-          height={40}
-        />
-        {`Sign ${urlQueryParams.get("mode")} with google`}
-      </button>
-
-    </div>
+      <Link href={"?mode=in"} className="text-[16px] font-[400]" >
+        Already have an account? <span className="underline font-[600]" >Sign in!</span>
+      </Link>
+    </form>
   );
 };
 
