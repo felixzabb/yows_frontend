@@ -1,9 +1,8 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
-import { CreateUser, checkUserLoginValid, connectToDb } from '@utils/api_funcs';
+import { CreateUserCall, checkUserLoginValidCall, connectToDb } from '@utils/apiCalls';
 import User from '@models/user';
-import { signIn } from 'next-auth/react';
 
 
 const handler = NextAuth({
@@ -27,11 +26,11 @@ const handler = NextAuth({
 				};
 				
 				try{
-					const validCheck = await checkUserLoginValid({apiKey: "felix12m", email: email, password: password});
+					const validCheck = await checkUserLoginValidCall({ email: email, password: password });
 					
-					if(!validCheck.acknowledged){ throw new Error(validCheck.errors.at(0), {cause: "VALID_CHECK_FAILED"}); };
+					if(!validCheck.acknowledged){ throw new Error(validCheck.errors.at(0), { cause: "VALID_CHECK_FAILED" }); };
 					
-					return {id: validCheck.user[0]._id, email: validCheck.user[0].email, alias: validCheck.user[0].alias, image: validCheck.user[0].image};
+					return { id: validCheck.user[0]._id, email: validCheck.user[0].email, alias: validCheck.user[0].alias, image: validCheck.user[0].image };
 				}
 				catch(error){
 					if(error.cause === "VALID_CHECK_FAILED"){
@@ -45,18 +44,18 @@ const handler = NextAuth({
 		}),
 	],
 	pages: {
-		signIn: "/signup",
-		error: "/signup?app_error=AUTH-SIGNIN-3&e_while=signing%20in%20with%20OAuth",
+		signIn: "/auth",
+		error: "/auth?app_error=AUTH-SIGNIN-3&e_while=signing%20in%20with%20OAuth",
 	},
 	
 	callbacks: {
 		async session({ session, user }) {
 			
-			await connectToDb({dbName: "yows_users"});
+			await connectToDb({ dbName: "yows_users" });
 			
 			const sessionUser = await User.findOne({ email: session.user.email });
 			
-			if(!sessionUser){ return null; }
+			if(!sessionUser){ return null; };
 			
 			session.user["alias"] = sessionUser.alias;
 			session.user.image = sessionUser.image;
@@ -79,14 +78,14 @@ const handler = NextAuth({
 				});
 
 				if(!possibleUser){
-					await CreateUser({apiKey: "felix12m", provider: authProvider, email: profile.email, alias: "none", image: profile["picture"], scheme: "default"});
+					await CreateUserCall({ provider: authProvider, email: profile.email, alias: "none", image: profile["picture"], scheme: "default" });
 					return true;
 				}
-				else if(possibleUser && possibleUser.provider === authProvider){
+				else if(possibleUser.provider === authProvider){
 					return true;
 				};
 				
-				throw new Error("AUTH-SIGNIN-3", {cause: "USER_ALREADY_EXISTS"});
+				throw new Error("AUTH-SIGNIN-3", { cause: "USER_ALREADY_EXISTS" });
 			}
 			catch(error){
 				if(error.cause === "USER_ALREADY_EXISTS"){
@@ -94,11 +93,9 @@ const handler = NextAuth({
 				}
 				console.log(error);
 				return false;
-			}
-			
-		}
-	}
+			};
+		},
+	},
 });
-
 
 export {handler as GET, handler as POST};

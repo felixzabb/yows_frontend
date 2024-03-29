@@ -19,7 +19,7 @@
 
 *{
   
-  @apply font-sans text-center text-text-color-light dark:text-text-color-dark;
+  @apply font-sans text-start text-text-color-light dark:text-text-color-dark;
 }
 
 input,
@@ -27,6 +27,50 @@ textarea{
   @apply focus:outline-none placeholder:text-gray-500 ;
 }
 
+img{
+  @apply cursor-pointer;
+}
+
+.code-mirror{
+  @apply w-full h-auto;
+}
+
+
+.action_valid{
+  @apply border-green-500;
+}
+
+.action_invalid{
+  @apply border-red-500;
+}
+
+.action_neutral{
+  @apply border-gray-600 dark:border-gray-300;
+}
+
+.wsform_bg{
+  @apply bg-wsform-sideNav-light-bg dark:bg-wsform-sideNav-dark-bg;
+}
+
+.border_invalid{
+  @apply border-red-500;
+}
+
+.border_valid{
+  @apply border-green-500;
+}
+
+.border_neutral{
+  @apply border-gray-600 dark:border-gray-300;
+}
+
+.border_neutral_rev{
+  @apply dark:border-gray-600 border-gray-300;
+}
+
+.text_color_rev{
+  @apply text-text-color-dark dark:text-text-color-light;
+}
 /* FLEX ELEMENTS -----------------------------------------------------------------*/
 
 .c_col_elm{

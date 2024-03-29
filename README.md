@@ -65,7 +65,7 @@ If you ever encounter an error when using YOWS, be it on the web or through an h
 Here you'll find a list of examples concerning things covered in this markdown.
 
 ### Creating a scraper
-You can easily create a scraper on [yows.me](https://yows.me/new-scraper). There are many parameters you can fill and four main action-types (and a loop option) you can choose from:
+You can easily create a scraper on [yows.me](https://yows.me/new). There are many parameters you can fill and four main action-types (and a loop option) you can choose from:
 - _scrape-action_ - Please provide a valid css-selector.
 - _button-press_ - Please provide a valid css-selector and a time for the program to wait after pressing the button.
 - _input-fill_ - Please provide a css-selector and text content to fill the input with.

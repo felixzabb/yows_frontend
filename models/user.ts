@@ -6,7 +6,6 @@ const UserSchema = new Schema({
         type: String,
         unique: [true, 'Email already exists'],
         required: [true, 'Email is required'],
-
     },
     phash: {
         type: String
@@ -40,6 +39,7 @@ const UserSchema = new Schema({
     },
     subscription: {
         type: Object,
+        
         subscribed: {
             type: Number
         },

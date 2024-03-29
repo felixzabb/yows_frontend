@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/lang-json": "^6.0.1",
     "@headlessui/react": "^1.7.18",
     "@react-email/components": "^0.0.14",
     "@react-email/render": "^0.0.12",
+    "@uiw/react-codemirror": "^4.21.25",
     "bcrypt": "^5.1.1",
     "child_process": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "codemirror": "^6.0.1",
     "cors": "^2.8.5",
     "eslint": "^8.57.0",
     "highlight.js": "^11.9.0",
@@ -34,7 +38,8 @@
     "tailwind-highlightjs": "^2.0.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "autoprefixer": "^10",

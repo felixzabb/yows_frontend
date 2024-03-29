@@ -2,7 +2,10 @@ import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import Link from 'next/link'
 
-const NavDropdown = ({thingToClick, options} : {thingToClick : any, options : {name : string, href : string}[]}) => {
+const NavDropdown = ({ thingToClick } : { thingToClick : JSX.Element }) => {
+
+  const options = [{ name : "Errors", href: "/errors" }, { name : "Docs", href:"/docs" }];
+
   return (
     <Menu as="div" className="relative inline-block text-left ">
       <Menu.Button className="w-auto h-auto">
@@ -22,7 +25,7 @@ const NavDropdown = ({thingToClick, options} : {thingToClick : any, options : {n
           {
             Array.from(options.keys()).map((optionIndex) => (
               <Menu.Item key={optionIndex} >
-                <Link id={`dd-menu-link-${optionIndex}`} href={options[optionIndex].href} className={'hover:bg-gray-300 hover:dark:bg-zinc-900 block p-2 text-[16px] font-[400] rounded-lg' }>
+                <Link href={options[optionIndex].href} className={'hover:bg-gray-300 hover:dark:bg-zinc-900 block p-2 text-[16px] font-[400] rounded-lg text-center' }>
                     {options[optionIndex].name}
                 </Link>
               </Menu.Item>
